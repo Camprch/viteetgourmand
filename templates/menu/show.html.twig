@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ menu.titre }} - Vite & Gourmand{% endblock %}
+
+{% block body %}
+    <article class="card">
+        <h1>{{ menu.titre }}</h1>
+        <p>{{ menu.description }}</p>
+        <p><strong>Theme:</strong> {{ menu.theme }}</p>
+        <p><strong>Regime:</strong> {{ menu.regime }}</p>
+        <p><strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
+        <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+        <p><strong>Stock:</strong> {{ menu.stock }}</p>
+        {% if menu.conditionsParticulieres %}
+            <p><strong>Conditions:</strong> {{ menu.conditionsParticulieres }}</p>
+        {% endif %}
+    </article>
+{% endblock %}
