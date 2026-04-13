@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Moderation avis{% endblock %}
+
+{% block body %}
+    <h1>Moderation des avis</h1>
+
+    {% if reviews is empty %}
+        <p class="muted">Aucun avis pour le moment.</p>
+    {% else %}
+        {% for review in reviews %}
+            <article class="card">
+                <p><strong>Commande #{{ review.commande.id }}</strong> - {{ review.commande.menu.titre }}</p>
+                <p>Client: {{ review.commande.nomPrenomClient }}</p>
+                <p>Note: {{ review.note }}/5</p>
+                <p>{{ review.commentaire }}</p>
+                <p class="muted">Statut affichage: {{ review.valide ? 'Valide' : 'Non valide' }}</p>
+
+                <form method="post" action="{{ path('app_employee_review_moderate', {id: review.id}) }}" style="display:flex; gap:8px; align-items:center;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('moderate_review_' ~ review.id) }}">
+                    <button type="submit" name="action" value="validate">Valider</button>
+                    <button type="submit" name="action" value="reject">Refuser</button>
+                </form>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

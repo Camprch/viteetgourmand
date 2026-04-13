@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande #{{ commande.id }}{% endblock %}
+
+{% block body %}
+    <h1>Commande #{{ commande.id }}</h1>
+    <article class="card">
+        <p><strong>Menu:</strong> {{ commande.menu.titre }}</p>
+        <p><strong>Client:</strong> {{ commande.nomPrenomClient }}</p>
+        <p><strong>Date prestation:</strong> {{ commande.datePrestation|date('d/m/Y') }} a {{ commande.heurePrestation|date('H:i') }}</p>
+        <p><strong>Adresse:</strong> {{ commande.adressePrestation }}</p>
+        <p><strong>Commune:</strong> {{ commande.communeLivraison.nom }}</p>
+        <p><strong>Personnes:</strong> {{ commande.nbPersonnes }}</p>
+        <p><strong>Total:</strong> {{ (commande.prixTotalCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+        <p><strong>Pret materiel:</strong> {{ commande.pretMateriel ? 'Oui' : 'Non' }}</p>
+    </article>
+{% endblock %}

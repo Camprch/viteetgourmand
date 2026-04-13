@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commander {{ menu.titre }}{% endblock %}
+
+{% block body %}
+    <h1>Commander: {{ menu.titre }}</h1>
+    <p>Prix menu: <strong>{{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR</strong> | Minimum: {{ menu.personnesMin }} personnes</p>
+
+    {{ form_start(orderForm) }}
+        {{ form_row(orderForm.nomPrenomClient) }}
+        {{ form_row(orderForm.gsmClient) }}
+        {{ form_row(orderForm.adressePrestation) }}
+        {{ form_row(orderForm.datePrestation) }}
+        {{ form_row(orderForm.heurePrestation) }}
+        {{ form_row(orderForm.communeLivraison) }}
+        {{ form_row(orderForm.nbPersonnes) }}
+        {{ form_row(orderForm.pretMateriel) }}
+        <button type="submit">Valider la commande</button>
+    {{ form_end(orderForm) }}
+
+    {% if pricing %}
+        <section class="card">
+            <h2>Recapitulatif</h2>
+            <p>Menu: {{ (pricing.prix_menu_total_centimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+            <p>Livraison: {{ (pricing.frais_livraison_centimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+            <p>Reduction: -{{ (pricing.reduction_appliquee_centimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+            <p><strong>Total: {{ (pricing.prix_total_centimes / 100)|number_format(2, ',', ' ') }} EUR</strong></p>
+        </section>
+    {% endif %}
+{% endblock %}

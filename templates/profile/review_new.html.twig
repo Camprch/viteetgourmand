@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Laisser un avis{% endblock %}
+
+{% block body %}
+    <h1>Laisser un avis - Commande #{{ commande.id }}</h1>
+    <p>Menu: <strong>{{ commande.menu.titre }}</strong></p>
+
+    {{ form_start(reviewForm) }}
+        {{ form_row(reviewForm.note) }}
+        {{ form_row(reviewForm.commentaire) }}
+        <button type="submit">Envoyer mon avis</button>
+    {{ form_end(reviewForm) }}
+
+    <p><a href="{{ path('app_profile_order_show', {id: commande.id}) }}">Retour commande</a></p>
+{% endblock %}
