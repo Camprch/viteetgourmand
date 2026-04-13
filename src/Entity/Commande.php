@@ -70,6 +70,9 @@ class Commande
     #[ORM\OneToMany(targetEntity: CommandeStatut::class, mappedBy: 'commande')]
     private Collection $commandeStatuts;
 
+    #[ORM\OneToOne(mappedBy: 'commande', cascade: ['persist', 'remove'])]
+    private ?Avis $avis = null;
+
     public function __construct()
     {
         $this->commandeStatuts = new ArrayCollection();
@@ -285,6 +288,22 @@ class Commande
                 $commandeStatut->setCommande(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAvis(): ?Avis
+    {
+        return $this->avis;
+    }
+
+    public function setAvis(Avis $avis): static
+    {
+        if ($avis->getCommande() !== $this) {
+            $avis->setCommande($this);
+        }
+
+        $this->avis = $avis;
 
         return $this;
     }
