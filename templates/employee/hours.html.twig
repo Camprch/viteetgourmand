@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion horaires{% endblock %}
+
+{% block body %}
+    <h1>Gestion des horaires</h1>
+    <p class="muted">Mets les horaires par jour. Si "Ferme" est coche, les heures sont ignorees.</p>
+
+    <form method="post" class="card">
+        <input type="hidden" name="_token" value="{{ csrf_token('employee_hours_update') }}">
+
+        {% for item in horaires %}
+            <fieldset class="card">
+                <legend><strong>{{ item.label }}</strong></legend>
+
+                <div>
+                    <label for="ferme_{{ item.jour }}">Ferme</label>
+                    <input id="ferme_{{ item.jour }}" name="ferme_{{ item.jour }}" type="checkbox" value="1" {% if item.ferme %}checked{% endif %}>
+                </div>
+
+                <div>
+                    <label for="ouverture_{{ item.jour }}">Heure ouverture</label>
+                    <input id="ouverture_{{ item.jour }}" name="ouverture_{{ item.jour }}" type="time" value="{{ item.ouverture }}">
+                </div>
+
+                <div>
+                    <label for="fermeture_{{ item.jour }}">Heure fermeture</label>
+                    <input id="fermeture_{{ item.jour }}" name="fermeture_{{ item.jour }}" type="time" value="{{ item.fermeture }}">
+                </div>
+            </fieldset>
+        {% endfor %}
+
+        <button type="submit">Enregistrer les horaires</button>
+    </form>
+{% endblock %}
