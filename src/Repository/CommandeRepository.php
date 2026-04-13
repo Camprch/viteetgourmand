@@ -16,6 +16,27 @@ class CommandeRepository extends ServiceEntityRepository
         parent::__construct($registry, Commande::class);
     }
 
+    /**
+     * @return Commande[]
+     */
+    public function findForEmployeeList(?string $clientSearch = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->leftJoin('c.user', 'u')->addSelect('u')
+            ->leftJoin('c.menu', 'm')->addSelect('m')
+            ->leftJoin('c.communeLivraison', 'cl')->addSelect('cl')
+            ->leftJoin('c.commandeStatuts', 'cs')->addSelect('cs')
+            ->orderBy('c.dateCommande', 'DESC');
+
+        if ($clientSearch !== null && trim($clientSearch) !== '') {
+            $qb
+                ->andWhere('c.nomPrenomClient LIKE :search OR u.email LIKE :search')
+                ->setParameter('search', '%' . trim($clientSearch) . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return Commande[] Returns an array of Commande objects
 //     */
