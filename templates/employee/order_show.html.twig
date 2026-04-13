@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande #{{ commande.id }} - Employe{% endblock %}
+
+{% block body %}
+    <h1>Commande #{{ commande.id }}</h1>
+
+    <article class="card">
+        <p><strong>Client:</strong> {{ commande.nomPrenomClient }} ({{ commande.user.email }})</p>
+        <p><strong>GSM:</strong> {{ commande.gsmClient }}</p>
+        <p><strong>Menu:</strong> {{ commande.menu.titre }}</p>
+        <p><strong>Date prestation:</strong> {{ commande.datePrestation|date('d/m/Y') }} {{ commande.heurePrestation|date('H:i') }}</p>
+        <p><strong>Adresse:</strong> {{ commande.adressePrestation }}</p>
+        <p><strong>Commune:</strong> {{ commande.communeLivraison.nom }}</p>
+        <p><strong>Statut actuel:</strong> {{ currentStatus ?: 'inconnu' }}</p>
+    </article>
+
+    <article class="card">
+        <h2>Mettre a jour le statut</h2>
+        {% if nextStatuses is empty %}
+            <p class="muted">Aucune transition disponible depuis ce statut.</p>
+        {% else %}
+            <form method="post" action="{{ path('app_employee_order_update_status', {id: commande.id}) }}">
+                <div>
+                    <label for="new_status">Nouveau statut</label>
+                    <select id="new_status" name="new_status" required>
+                        {% for status in nextStatuses %}
+                            <option value="{{ status }}">{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="mode_contact">Mode de contact (si annulation)</label>
+                    <select id="mode_contact" name="mode_contact">
+                        <option value="">--</option>
+                        <option value="gsm">gsm</option>
+                        <option value="mail">mail</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="motif">Motif/commentaire</label>
+                    <textarea id="motif" name="motif" rows="3"></textarea>
+                </div>
+                <button type="submit">Enregistrer le statut</button>
+            </form>
+        {% endif %}
+    </article>
+
+    <h2>Historique statuts</h2>
+    {% if statuts is empty %}
+        <p class="muted">Aucun statut.</p>
+    {% else %}
+        {% for item in statuts %}
+            <article class="card">
+                <p><strong>{{ item.statut }}</strong> - {{ item.dateHeure|date('d/m/Y H:i') }}</p>
+                {% if item.user %}
+                    <p class="muted">Par: {{ item.user.email }}</p>
+                {% endif %}
+                {% if item.commentaire %}
+                    <p class="muted">{{ item.commentaire }}</p>
+                {% endif %}
+            </article>
+        {% endfor %}
+    {% endif %}
+
+    <p><a href="{{ path('app_employee_orders') }}">Retour liste commandes</a></p>
+{% endblock %}

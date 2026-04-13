@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion commandes employe{% endblock %}
+
+{% block body %}
+    <h1>Gestion des commandes</h1>
+
+    <form method="get" class="card">
+        <div>
+            <label for="client">Filtre client (nom/email)</label>
+            <input id="client" name="client" value="{{ filters.client }}" type="text">
+        </div>
+        <div>
+            <label for="status">Filtre statut</label>
+            <select id="status" name="status">
+                <option value="">Tous</option>
+                {% for status in ['en_attente','accepte','en_preparation','en_cours_livraison','livre','attente_retour_materiel','terminee','annulee'] %}
+                    <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit">Filtrer</button>
+    </form>
+
+    {% if ordersData is empty %}
+        <p class="muted">Aucune commande selon ces filtres.</p>
+    {% else %}
+        {% for row in ordersData %}
+            {% set commande = row.commande %}
+            <article class="card">
+                <p><strong>#{{ commande.id }}</strong> - {{ commande.menu.titre }}</p>
+                <p>Client: {{ commande.nomPrenomClient }} ({{ commande.user.email }})</p>
+                <p>Date prestation: {{ commande.datePrestation|date('d/m/Y') }} {{ commande.heurePrestation|date('H:i') }}</p>
+                <p>Statut actuel: <strong>{{ row.current_status ?: 'inconnu' }}</strong></p>
+                <p>Total: {{ (commande.prixTotalCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+                <a href="{{ path('app_employee_order_show', {id: commande.id}) }}">Voir detail / modifier statut</a>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
