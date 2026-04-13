@@ -35,7 +35,7 @@ class FooterExtension extends AbstractExtension
         ];
 
         $items = [];
-        foreach ($this->horaireRepository->findAll() as $horaire) {
+        foreach ($this->horaireRepository->findOrderedByJour() as $horaire) {
             $jour = (int) $horaire->getJour();
             $items[$jour] = [
                 'label' => $labels[$jour] ?? ('Jour '.$jour),

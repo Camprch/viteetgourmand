@@ -15,4 +15,15 @@ class HoraireRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Horaire::class);
     }
+
+    /**
+     * @return list<Horaire>
+     */
+    public function findOrderedByJour(): array
+    {
+        return $this->createQueryBuilder('h')
+            ->orderBy('h.jour', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
