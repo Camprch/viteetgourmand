@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi commande #{{ commande.id }}{% endblock %}
+
+{% block body %}
+    <h1>Commande #{{ commande.id }}</h1>
+
+    <article class="card">
+        <p><strong>Menu:</strong> {{ commande.menu.titre }}</p>
+        <p><strong>Date prestation:</strong> {{ commande.datePrestation|date('d/m/Y') }} a {{ commande.heurePrestation|date('H:i') }}</p>
+        <p><strong>Adresse:</strong> {{ commande.adressePrestation }}</p>
+        <p><strong>Total:</strong> {{ (commande.prixTotalCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+    </article>
+
+    <h2>Suivi des statuts</h2>
+    {% if statuts is empty %}
+        <p class="muted">Aucun statut disponible.</p>
+    {% else %}
+        {% for item in statuts %}
+            <article class="card">
+                <p><strong>{{ item.statut }}</strong></p>
+                <p>{{ item.dateHeure|date('d/m/Y H:i') }}</p>
+                {% if item.commentaire %}
+                    <p class="muted">{{ item.commentaire }}</p>
+                {% endif %}
+            </article>
+        {% endfor %}
+    {% endif %}
+
+    {% if canReview %}
+        <p><a href="{{ path('app_profile_order_review', {id: commande.id}) }}">Laisser un avis</a></p>
+    {% elseif commande.avis %}
+        <p class="muted">Avis deja depose (en attente de moderation ou valide).</p>
+    {% endif %}
+
+    <p><a href="{{ path('app_profile_orders') }}">Retour a mes commandes</a></p>
+{% endblock %}
