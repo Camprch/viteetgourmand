@@ -8,7 +8,9 @@ final class OrderWorkflowService
      * @var array<string, list<string>>
      */
     private const ALLOWED_TRANSITIONS = [
+        'en_attente' => ['accepte', 'annulee'],
         'accepte' => ['en_preparation'],
+        'annulee' => [],
         'en_preparation' => ['en_cours_livraison'],
         'en_cours_livraison' => ['livre'],
         'livre' => ['attente_retour_materiel', 'terminee'],
