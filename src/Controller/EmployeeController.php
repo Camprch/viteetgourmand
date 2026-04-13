@@ -5,9 +5,11 @@ namespace App\Controller;
 use App\Entity\Avis;
 use App\Entity\Commande;
 use App\Entity\CommandeStatut;
+use App\Entity\Horaire;
 use App\Entity\User;
 use App\Repository\AvisRepository;
 use App\Repository\CommandeRepository;
+use App\Repository\HoraireRepository;
 use App\Service\OrderWorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,6 +21,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/employee')]
 final class EmployeeController extends AbstractController
 {
+    private const DAY_LABELS = [
+        1 => 'Lundi',
+        2 => 'Mardi',
+        3 => 'Mercredi',
+        4 => 'Jeudi',
+        5 => 'Vendredi',
+        6 => 'Samedi',
+        7 => 'Dimanche',
+    ];
+
     #[Route('', name: 'app_employee_dashboard', methods: ['GET'])]
     public function index(): RedirectResponse
     {
@@ -183,6 +195,80 @@ final class EmployeeController extends AbstractController
         return $this->redirectToRoute('app_employee_reviews');
     }
 
+    #[Route('/hours', name: 'app_employee_hours', methods: ['GET', 'POST'])]
+    public function hours(
+        Request $request,
+        HoraireRepository $horaireRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->assertEmployeeAccess();
+        $this->ensureWeeklyHours($horaireRepository, $entityManager);
+
+        $horairesByDay = [];
+        foreach ($horaireRepository->findOrderedByJour() as $horaire) {
+            $horairesByDay[(int) $horaire->getJour()] = $horaire;
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('employee_hours_update', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token CSRF invalide.');
+
+                return $this->redirectToRoute('app_employee_hours');
+            }
+
+            for ($jour = 1; $jour <= 7; ++$jour) {
+                $horaire = $horairesByDay[$jour] ?? null;
+                if (!$horaire instanceof Horaire) {
+                    continue;
+                }
+
+                $isClosed = $request->request->has('ferme_' . $jour);
+                $opening = trim($request->request->getString('ouverture_' . $jour, ''));
+                $closing = trim($request->request->getString('fermeture_' . $jour, ''));
+
+                if ($isClosed) {
+                    $horaire->setFerme(true);
+                    $horaire->setHeureOuverture(null);
+                    $horaire->setHeureFermeture(null);
+                    continue;
+                }
+
+                if ($opening === '' || $closing === '') {
+                    $this->addFlash('error', sprintf('Le jour %s doit avoir une ouverture et une fermeture.', self::DAY_LABELS[$jour]));
+
+                    return $this->redirectToRoute('app_employee_hours');
+                }
+
+                $openingTime = \DateTimeImmutable::createFromFormat('!H:i', $opening);
+                $closingTime = \DateTimeImmutable::createFromFormat('!H:i', $closing);
+                if (!$openingTime instanceof \DateTimeImmutable || !$closingTime instanceof \DateTimeImmutable) {
+                    $this->addFlash('error', sprintf('Format horaire invalide pour %s.', self::DAY_LABELS[$jour]));
+
+                    return $this->redirectToRoute('app_employee_hours');
+                }
+
+                if ($openingTime >= $closingTime) {
+                    $this->addFlash('error', sprintf('L\'heure de fermeture doit etre apres l\'ouverture (%s).', self::DAY_LABELS[$jour]));
+
+                    return $this->redirectToRoute('app_employee_hours');
+                }
+
+                $horaire->setFerme(false);
+                $horaire->setHeureOuverture($openingTime);
+                $horaire->setHeureFermeture($closingTime);
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Horaires mis a jour.');
+
+            return $this->redirectToRoute('app_employee_hours');
+        }
+
+        return $this->render('employee/hours.html.twig', [
+            'horaires' => $this->buildHoursViewModel($horairesByDay),
+        ]);
+    }
+
     private function getCurrentStatus(Commande $commande): ?string
     {
         $latest = null;
@@ -200,5 +286,54 @@ final class EmployeeController extends AbstractController
         if (!$this->isGranted('ROLE_EMPLOYEE') && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException();
         }
+    }
+
+    private function ensureWeeklyHours(HoraireRepository $horaireRepository, EntityManagerInterface $entityManager): void
+    {
+        $existingDays = [];
+        foreach ($horaireRepository->findOrderedByJour() as $horaire) {
+            $existingDays[(int) $horaire->getJour()] = true;
+        }
+
+        $hasChanges = false;
+        for ($jour = 1; $jour <= 7; ++$jour) {
+            if (isset($existingDays[$jour])) {
+                continue;
+            }
+
+            $entityManager->persist(
+                (new Horaire())
+                    ->setJour($jour)
+                    ->setFerme(true)
+                    ->setHeureOuverture(null)
+                    ->setHeureFermeture(null)
+            );
+            $hasChanges = true;
+        }
+
+        if ($hasChanges) {
+            $entityManager->flush();
+        }
+    }
+
+    /**
+     * @param array<int, Horaire> $horairesByDay
+     * @return list<array{jour: int, label: string, ferme: bool, ouverture: string, fermeture: string}>
+     */
+    private function buildHoursViewModel(array $horairesByDay): array
+    {
+        $result = [];
+        for ($jour = 1; $jour <= 7; ++$jour) {
+            $horaire = $horairesByDay[$jour] ?? null;
+            $result[] = [
+                'jour' => $jour,
+                'label' => self::DAY_LABELS[$jour],
+                'ferme' => (bool) ($horaire?->isFerme() ?? true),
+                'ouverture' => $horaire?->getHeureOuverture()?->format('H:i') ?? '',
+                'fermeture' => $horaire?->getHeureFermeture()?->format('H:i') ?? '',
+            ];
+        }
+
+        return $result;
     }
 }
