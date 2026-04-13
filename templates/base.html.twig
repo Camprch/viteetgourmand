@@ -2,9 +2,25 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}Vite & Gourmand{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
+            <style>
+                body { font-family: sans-serif; margin: 0; background: #f8f6f2; color: #1f1f1f; }
+                header { padding: 16px 24px; background: #fff; border-bottom: 1px solid #ddd; }
+                nav { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+                nav a { color: #1f1f1f; text-decoration: none; }
+                nav a:hover { text-decoration: underline; }
+                main { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
+                .flash { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; }
+                .flash-success { background: #e8f7e8; border: 1px solid #8ccb8c; }
+                .flash-error { background: #ffe7e7; border: 1px solid #d27e7e; }
+                .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; margin-bottom: 14px; }
+                form > div { margin-bottom: 12px; }
+                input, textarea, select { width: 100%; max-width: 420px; padding: 8px; }
+                button { padding: 9px 14px; cursor: pointer; }
+                .muted { color: #666; }
+            </style>
         {% endblock %}
 
         {% block javascripts %}
@@ -19,6 +35,33 @@
         {% endif %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <header>
+            <nav>
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <a href="{{ path('app_menu_index') }}">Menus</a>
+                {% if app.user %}
+                    {% if is_granted('ROLE_EMPLOYEE') %}
+                        <a href="{{ path('app_employee_dashboard') }}">Espace employe</a>
+                    {% endif %}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin_dashboard') }}">Espace admin</a>
+                    {% endif %}
+                    <span class="muted">Connecte: {{ app.user.userIdentifier }}</span>
+                    <a href="{{ path('app_logout') }}">Deconnexion</a>
+                {% else %}
+                    <a href="{{ path('app_login') }}">Connexion</a>
+                    <a href="{{ path('app_register') }}">Inscription</a>
+                {% endif %}
+            </nav>
+        </header>
+        <main>
+            {% for message in app.flashes('success') %}
+                <div class="flash flash-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="flash flash-error">{{ message }}</div>
+            {% endfor %}
+            {% block body %}{% endblock %}
+        </main>
     </body>
 </html>

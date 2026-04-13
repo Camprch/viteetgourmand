@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Menus - Vite & Gourmand{% endblock %}
+
+{% block body %}
+    <h1>Menus</h1>
+    {% if menus is empty %}
+        <p class="muted">Aucun menu actif.</p>
+    {% else %}
+        {% for menu in menus %}
+            <article class="card">
+                <h2>{{ menu.titre }}</h2>
+                <p>{{ menu.description }}</p>
+                <p><strong>Theme:</strong> {{ menu.theme }} | <strong>Regime:</strong> {{ menu.regime }}</p>
+                <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | <strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
+                <a href="{{ path('app_menu_show', {id: menu.id}) }}">Voir le detail</a>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
