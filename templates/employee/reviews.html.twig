@@ -4,6 +4,10 @@
 
 {% block body %}
     <h1>Moderation des avis</h1>
+    <p>
+        <a href="{{ path('app_employee_orders') }}">Gestion commandes</a> |
+        <a href="{{ path('app_employee_hours') }}">Gestion horaires</a>
+    </p>
 
     {% if reviews is empty %}
         <p class="muted">Aucun avis pour le moment.</p>
