@@ -125,7 +125,11 @@ final class OrderController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if ($commande->getUser()?->getId() !== $user->getId() && !$this->isGranted('ROLE_EMPLOYEE')) {
+        if (
+            $commande->getUser()?->getId() !== $user->getId()
+            && !$this->isGranted('ROLE_EMPLOYEE')
+            && !$this->isGranted('ROLE_ADMIN')
+        ) {
             throw $this->createAccessDeniedException();
         }
 
