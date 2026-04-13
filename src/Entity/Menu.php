@@ -52,9 +52,24 @@ class Menu
     #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'menu')]
     private Collection $commandes;
 
+    /**
+     * @var Collection<int, MenuImage>
+     */
+    #[ORM\OneToMany(targetEntity: MenuImage::class, mappedBy: 'menu')]
+    private Collection $menuImages;
+
+    /**
+     * @var Collection<int, Plat>
+     */
+    #[ORM\ManyToMany(targetEntity: Plat::class, inversedBy: 'menus')]
+    #[ORM\JoinTable(name: 'menu_plat')]
+    private Collection $plats;
+
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
+        $this->menuImages = new ArrayCollection();
+        $this->plats = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -208,6 +223,59 @@ class Menu
                 $commande->setMenu(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MenuImage>
+     */
+    public function getMenuImages(): Collection
+    {
+        return $this->menuImages;
+    }
+
+    public function addMenuImage(MenuImage $menuImage): static
+    {
+        if (!$this->menuImages->contains($menuImage)) {
+            $this->menuImages->add($menuImage);
+            $menuImage->setMenu($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMenuImage(MenuImage $menuImage): static
+    {
+        if ($this->menuImages->removeElement($menuImage)) {
+            if ($menuImage->getMenu() === $this) {
+                $menuImage->setMenu(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Plat>
+     */
+    public function getPlats(): Collection
+    {
+        return $this->plats;
+    }
+
+    public function addPlat(Plat $plat): static
+    {
+        if (!$this->plats->contains($plat)) {
+            $this->plats->add($plat);
+        }
+
+        return $this;
+    }
+
+    public function removePlat(Plat $plat): static
+    {
+        $this->plats->removeElement($plat);
 
         return $this;
     }
