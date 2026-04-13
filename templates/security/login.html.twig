@@ -18,6 +18,7 @@
             <label for="password">Mot de passe</label>
             <input type="password" name="_password" id="password" autocomplete="current-password" required>
         </div>
+        <p><a href="{{ path('app_password_reset_request') }}">Mot de passe oublie ?</a></p>
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <button type="submit">Se connecter</button>
     </form>
