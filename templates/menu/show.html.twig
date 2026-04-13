@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ menu.titre }} - Vite & Gourmand{% endblock %}
+
+{% block body %}
+    <article class="card">
+        <h1>{{ menu.titre }}</h1>
+        <p>{{ menu.description }}</p>
+        <p><strong>Theme:</strong> {{ menu.theme }}</p>
+        <p><strong>Regime:</strong> {{ menu.regime }}</p>
+        <p><strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
+        <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+        <p><strong>Stock:</strong> {{ menu.stock }}</p>
+        {% if menu.conditionsParticulieres %}
+            <p><strong>Conditions:</strong> {{ menu.conditionsParticulieres }}</p>
+        {% endif %}
+
+        {% if app.user %}
+            {% if menu.stock > 0 %}
+                <p><a href="{{ path('app_order_new', {id: menu.id}) }}">Commander ce menu</a></p>
+            {% else %}
+                <p class="muted">Menu indisponible (stock epuise).</p>
+            {% endif %}
+        {% else %}
+            <p>
+                <a href="{{ path('app_login') }}">Connecte-toi</a> ou
+                <a href="{{ path('app_register') }}">cree un compte</a>
+                pour commander ce menu.
+            </p>
+        {% endif %}
+    </article>
+{% endblock %}
