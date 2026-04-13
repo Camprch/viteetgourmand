@@ -40,6 +40,7 @@
                 <a href="{{ path('app_home') }}">Accueil</a>
                 <a href="{{ path('app_menu_index') }}">Menus</a>
                 {% if app.user %}
+                    <a href="{{ path('app_menu_index') }}">Commander</a>
                     {% if is_granted('ROLE_EMPLOYEE') %}
                         <a href="{{ path('app_employee_dashboard') }}">Espace employe</a>
                     {% endif %}
