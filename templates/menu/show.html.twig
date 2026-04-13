@@ -14,5 +14,19 @@
         {% if menu.conditionsParticulieres %}
             <p><strong>Conditions:</strong> {{ menu.conditionsParticulieres }}</p>
         {% endif %}
+
+        {% if app.user %}
+            {% if menu.stock > 0 %}
+                <p><a href="{{ path('app_order_new', {id: menu.id}) }}">Commander ce menu</a></p>
+            {% else %}
+                <p class="muted">Menu indisponible (stock epuise).</p>
+            {% endif %}
+        {% else %}
+            <p>
+                <a href="{{ path('app_login') }}">Connecte-toi</a> ou
+                <a href="{{ path('app_register') }}">cree un compte</a>
+                pour commander ce menu.
+            </p>
+        {% endif %}
     </article>
 {% endblock %}
