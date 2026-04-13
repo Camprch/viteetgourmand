@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - Vite & Gourmand{% endblock %}
+
+{% block body %}
+    <h1>Contact</h1>
+    <p>Besoin d'un devis ou d'une precision ? Ecris-nous via ce formulaire.</p>
+
+    {{ form_start(contactForm) }}
+        {{ form_row(contactForm.nom) }}
+        {{ form_row(contactForm.email) }}
+        {{ form_row(contactForm.titre) }}
+        {{ form_row(contactForm.message) }}
+        <button type="submit">Envoyer le message</button>
+    {{ form_end(contactForm) }}
+{% endblock %}
