@@ -4,6 +4,11 @@
 
 {% block body %}
     <h1>Gestion des horaires</h1>
+    <p>
+        <a href="{{ path('app_employee_orders') }}">Gestion commandes</a> |
+        <a href="{{ path('app_employee_reviews') }}">Moderation avis</a> |
+        <a href="{{ path('app_employee_menus') }}">Gestion menus</a>
+    </p>
     <p class="muted">Mets les horaires par jour. Si "Ferme" est coche, les heures sont ignorees.</p>
 
     <form method="post" class="card">
