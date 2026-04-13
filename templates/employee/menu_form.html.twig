@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isEdit ? 'Modifier menu' : 'Creer menu' }}{% endblock %}
+
+{% block body %}
+    <h1>{{ isEdit ? 'Modifier le menu' : 'Creer un menu' }}</h1>
+
+    {{ form_start(menuForm) }}
+        {{ form_row(menuForm.titre) }}
+        {{ form_row(menuForm.description) }}
+        {{ form_row(menuForm.theme) }}
+        {{ form_row(menuForm.regime) }}
+        {{ form_row(menuForm.prixMinCentimes) }}
+        {{ form_row(menuForm.personnesMin) }}
+        {{ form_row(menuForm.stock) }}
+        {{ form_row(menuForm.conditionsParticulieres) }}
+        {{ form_row(menuForm.actif) }}
+        {{ form_row(menuForm.plats) }}
+        <button type="submit">{{ isEdit ? 'Enregistrer' : 'Creer' }}</button>
+    {{ form_end(menuForm) }}
+
+    <p><a href="{{ path('app_employee_menus') }}">Retour gestion menus</a></p>
+{% endblock %}

@@ -6,11 +6,15 @@ use App\Entity\Avis;
 use App\Entity\Commande;
 use App\Entity\CommandeStatut;
 use App\Entity\Horaire;
+use App\Entity\Menu;
 use App\Entity\User;
+use App\Form\MenuType;
 use App\Repository\AvisRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\HoraireRepository;
+use App\Repository\MenuRepository;
 use App\Service\OrderWorkflowService;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -267,6 +271,94 @@ final class EmployeeController extends AbstractController
         return $this->render('employee/hours.html.twig', [
             'horaires' => $this->buildHoursViewModel($horairesByDay),
         ]);
+    }
+
+    #[Route('/menus', name: 'app_employee_menus', methods: ['GET'])]
+    public function menus(MenuRepository $menuRepository): Response
+    {
+        $this->assertEmployeeAccess();
+
+        return $this->render('employee/menus.html.twig', [
+            'menus' => $menuRepository->findBy([], ['createdAt' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/menus/new', name: 'app_employee_menu_new', methods: ['GET', 'POST'])]
+    public function newMenu(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->assertEmployeeAccess();
+
+        $menu = (new Menu())
+            ->setActif(true)
+            ->setStock(0)
+            ->setCreatedAt(new \DateTimeImmutable())
+            ->setConditionsParticulieres(null);
+
+        $form = $this->createForm(MenuType::class, $menu);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($menu);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Menu cree.');
+
+            return $this->redirectToRoute('app_employee_menus');
+        }
+
+        return $this->render('employee/menu_form.html.twig', [
+            'menuForm' => $form,
+            'isEdit' => false,
+            'menu' => $menu,
+        ]);
+    }
+
+    #[Route('/menus/{id}/edit', name: 'app_employee_menu_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function editMenu(Menu $menu, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->assertEmployeeAccess();
+
+        $form = $this->createForm(MenuType::class, $menu);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Menu mis a jour.');
+
+            return $this->redirectToRoute('app_employee_menus');
+        }
+
+        return $this->render('employee/menu_form.html.twig', [
+            'menuForm' => $form,
+            'isEdit' => true,
+            'menu' => $menu,
+        ]);
+    }
+
+    #[Route('/menus/{id}/delete', name: 'app_employee_menu_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function deleteMenu(Menu $menu, Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $this->assertEmployeeAccess();
+
+        if (!$this->isCsrfTokenValid('delete_menu_' . $menu->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_employee_menus');
+        }
+
+        try {
+            $entityManager->remove($menu);
+            $entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException) {
+            $this->addFlash('error', 'Suppression impossible: ce menu est lie a des commandes.');
+
+            return $this->redirectToRoute('app_employee_menus');
+        }
+
+        $this->addFlash('success', 'Menu supprime.');
+
+        return $this->redirectToRoute('app_employee_menus');
     }
 
     private function getCurrentStatus(Commande $commande): ?string
