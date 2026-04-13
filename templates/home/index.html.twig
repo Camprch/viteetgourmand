@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Vite & Gourmand{% endblock %}
+
+{% block body %}
+    <h1>Vite & Gourmand</h1>
+    <p>Traiteur a Bordeaux depuis 25 ans. Menus pour vos evenements, du classique au festif.</p>
+
+    <h2>Avis clients valides</h2>
+    {% if avis is empty %}
+        <p class="muted">Aucun avis valide pour le moment.</p>
+    {% else %}
+        {% for item in avis %}
+            <article class="card">
+                <strong>Note: {{ item.note }}/5</strong>
+                <p>{{ item.commentaire }}</p>
+                <small class="muted">{{ item.createdAt|date('d/m/Y H:i') }}</small>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
