@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion plats{% endblock %}
+
+{% block body %}
+    <h1>Gestion des plats</h1>
+    <p>
+        <a href="{{ path('app_employee_menus') }}">Gestion menus</a> |
+        <a href="{{ path('app_employee_allergenes') }}">Gestion allergenes</a> |
+        <a href="{{ path('app_employee_hours') }}">Gestion horaires</a>
+    </p>
+
+    <p><a href="{{ path('app_employee_plat_new') }}">Creer un plat</a></p>
+
+    {% if plats is empty %}
+        <p class="muted">Aucun plat pour le moment.</p>
+    {% else %}
+        {% for plat in plats %}
+            <article class="card">
+                <p><strong>#{{ plat.id }} - {{ plat.nom }}</strong> ({{ plat.type }})</p>
+                <p>{{ plat.description ?: 'Sans description.' }}</p>
+                <p>
+                    Allergenes:
+                    {% if plat.allergenes is empty %}
+                        Aucun
+                    {% else %}
+                        {% for allergene in plat.allergenes %}
+                            {{ allergene.nom }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </p>
+
+                <p><a href="{{ path('app_employee_plat_edit', {id: plat.id}) }}">Modifier</a></p>
+
+                <form method="post" action="{{ path('app_employee_plat_delete', {id: plat.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_plat_' ~ plat.id) }}">
+                    <button type="submit">Supprimer</button>
+                </form>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

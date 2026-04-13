@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isEdit ? 'Modifier allergene' : 'Creer allergene' }}{% endblock %}
+
+{% block body %}
+    <h1>{{ isEdit ? 'Modifier allergene' : 'Creer un allergene' }}</h1>
+
+    {{ form_start(allergeneForm) }}
+        {{ form_row(allergeneForm.nom) }}
+        <button type="submit">{{ isEdit ? 'Enregistrer' : 'Creer' }}</button>
+    {{ form_end(allergeneForm) }}
+
+    <p><a href="{{ path('app_employee_allergenes') }}">Retour gestion allergenes</a></p>
+{% endblock %}

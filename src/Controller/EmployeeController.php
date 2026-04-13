@@ -2,19 +2,26 @@
 
 namespace App\Controller;
 
+use App\Entity\Allergene;
 use App\Entity\Avis;
 use App\Entity\Commande;
 use App\Entity\CommandeStatut;
 use App\Entity\Horaire;
 use App\Entity\Menu;
+use App\Entity\Plat;
 use App\Entity\User;
+use App\Form\AllergeneType;
 use App\Form\MenuType;
+use App\Form\PlatType;
+use App\Repository\AllergeneRepository;
 use App\Repository\AvisRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\HoraireRepository;
 use App\Repository\MenuRepository;
+use App\Repository\PlatRepository;
 use App\Service\OrderWorkflowService;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -359,6 +366,186 @@ final class EmployeeController extends AbstractController
         $this->addFlash('success', 'Menu supprime.');
 
         return $this->redirectToRoute('app_employee_menus');
+    }
+
+    #[Route('/allergenes', name: 'app_employee_allergenes', methods: ['GET'])]
+    public function allergenes(AllergeneRepository $allergeneRepository): Response
+    {
+        $this->assertEmployeeAccess();
+
+        return $this->render('employee/allergenes.html.twig', [
+            'allergenes' => $allergeneRepository->findBy([], ['nom' => 'ASC']),
+        ]);
+    }
+
+    #[Route('/allergenes/new', name: 'app_employee_allergene_new', methods: ['GET', 'POST'])]
+    public function newAllergene(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->assertEmployeeAccess();
+
+        $allergene = new Allergene();
+        $form = $this->createForm(AllergeneType::class, $allergene);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $entityManager->persist($allergene);
+                $entityManager->flush();
+            } catch (UniqueConstraintViolationException) {
+                $this->addFlash('error', 'Cet allergene existe deja.');
+
+                return $this->render('employee/allergene_form.html.twig', [
+                    'allergeneForm' => $form,
+                    'isEdit' => false,
+                ]);
+            }
+
+            $this->addFlash('success', 'Allergene cree.');
+
+            return $this->redirectToRoute('app_employee_allergenes');
+        }
+
+        return $this->render('employee/allergene_form.html.twig', [
+            'allergeneForm' => $form,
+            'isEdit' => false,
+        ]);
+    }
+
+    #[Route('/allergenes/{id}/edit', name: 'app_employee_allergene_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function editAllergene(Allergene $allergene, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->assertEmployeeAccess();
+
+        $form = $this->createForm(AllergeneType::class, $allergene);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $entityManager->flush();
+            } catch (UniqueConstraintViolationException) {
+                $this->addFlash('error', 'Cet allergene existe deja.');
+
+                return $this->render('employee/allergene_form.html.twig', [
+                    'allergeneForm' => $form,
+                    'isEdit' => true,
+                ]);
+            }
+
+            $this->addFlash('success', 'Allergene mis a jour.');
+
+            return $this->redirectToRoute('app_employee_allergenes');
+        }
+
+        return $this->render('employee/allergene_form.html.twig', [
+            'allergeneForm' => $form,
+            'isEdit' => true,
+        ]);
+    }
+
+    #[Route('/allergenes/{id}/delete', name: 'app_employee_allergene_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function deleteAllergene(Allergene $allergene, Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $this->assertEmployeeAccess();
+
+        if (!$this->isCsrfTokenValid('delete_allergene_' . $allergene->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_employee_allergenes');
+        }
+
+        try {
+            $entityManager->remove($allergene);
+            $entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException) {
+            $this->addFlash('error', 'Suppression impossible: allergene encore lie a des plats.');
+
+            return $this->redirectToRoute('app_employee_allergenes');
+        }
+
+        $this->addFlash('success', 'Allergene supprime.');
+
+        return $this->redirectToRoute('app_employee_allergenes');
+    }
+
+    #[Route('/plats', name: 'app_employee_plats', methods: ['GET'])]
+    public function plats(PlatRepository $platRepository): Response
+    {
+        $this->assertEmployeeAccess();
+
+        return $this->render('employee/plats.html.twig', [
+            'plats' => $platRepository->findBy([], ['nom' => 'ASC']),
+        ]);
+    }
+
+    #[Route('/plats/new', name: 'app_employee_plat_new', methods: ['GET', 'POST'])]
+    public function newPlat(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->assertEmployeeAccess();
+
+        $plat = new Plat();
+        $form = $this->createForm(PlatType::class, $plat);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($plat);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Plat cree.');
+
+            return $this->redirectToRoute('app_employee_plats');
+        }
+
+        return $this->render('employee/plat_form.html.twig', [
+            'platForm' => $form,
+            'isEdit' => false,
+        ]);
+    }
+
+    #[Route('/plats/{id}/edit', name: 'app_employee_plat_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function editPlat(Plat $plat, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $this->assertEmployeeAccess();
+
+        $form = $this->createForm(PlatType::class, $plat);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Plat mis a jour.');
+
+            return $this->redirectToRoute('app_employee_plats');
+        }
+
+        return $this->render('employee/plat_form.html.twig', [
+            'platForm' => $form,
+            'isEdit' => true,
+        ]);
+    }
+
+    #[Route('/plats/{id}/delete', name: 'app_employee_plat_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function deletePlat(Plat $plat, Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $this->assertEmployeeAccess();
+
+        if (!$this->isCsrfTokenValid('delete_plat_' . $plat->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_employee_plats');
+        }
+
+        try {
+            $entityManager->remove($plat);
+            $entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException) {
+            $this->addFlash('error', 'Suppression impossible: ce plat est lie a des menus.');
+
+            return $this->redirectToRoute('app_employee_plats');
+        }
+
+        $this->addFlash('success', 'Plat supprime.');
+
+        return $this->redirectToRoute('app_employee_plats');
     }
 
     private function getCurrentStatus(Commande $commande): ?string
