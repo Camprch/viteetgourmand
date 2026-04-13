@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+    <h1>Mon profil</h1>
+    <article class="card">
+        <p><strong>Nom:</strong> {{ user.nom }}</p>
+        <p><strong>Prenom:</strong> {{ user.prenom }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Telephone:</strong> {{ user.telephone ?: 'Non renseigne' }}</p>
+        <p><strong>Adresse:</strong> {{ user.adresse ?: 'Non renseignee' }}</p>
+    </article>
+
+    <p><a href="{{ path('app_profile_orders') }}">Voir mes commandes</a></p>
+{% endblock %}
