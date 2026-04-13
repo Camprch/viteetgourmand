@@ -4,5 +4,24 @@
 
 {% block body %}
     <h1>Espace Administrateur</h1>
-    <p>Zone reservee aux administrateurs.</p>
+    <p>Gestion des comptes employes.</p>
+
+    <p><a href="{{ path('app_admin_employee_new') }}">Creer un compte employe</a></p>
+
+    <h2>Employes</h2>
+    {% if employees is empty %}
+        <p class="muted">Aucun employe pour le moment.</p>
+    {% else %}
+        {% for employee in employees %}
+            <article class="card">
+                <p><strong>{{ employee.email }}</strong></p>
+                <p>Actif: {{ employee.actif ? 'Oui' : 'Non' }}</p>
+                <p>Cree le: {{ employee.createdAt|date('d/m/Y H:i') }}</p>
+                <form method="post" action="{{ path('app_admin_employee_toggle_active', {id: employee.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_employee_' ~ employee.id) }}">
+                    <button type="submit">{{ employee.actif ? 'Desactiver' : 'Activer' }}</button>
+                </form>
+            </article>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
