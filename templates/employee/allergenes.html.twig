@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion allergenes{% endblock %}
+
+{% block body %}
+    <h1>Gestion des allergenes</h1>
+    <p>
+        <a href="{{ path('app_employee_menus') }}">Gestion menus</a> |
+        <a href="{{ path('app_employee_plats') }}">Gestion plats</a> |
+        <a href="{{ path('app_employee_hours') }}">Gestion horaires</a>
+    </p>
+
+    <p><a href="{{ path('app_employee_allergene_new') }}">Creer un allergene</a></p>
+
+    {% if allergenes is empty %}
+        <p class="muted">Aucun allergene pour le moment.</p>
+    {% else %}
+        {% for allergene in allergenes %}
+            <article class="card">
+                <p><strong>#{{ allergene.id }} - {{ allergene.nom }}</strong></p>
+                <p>Utilise dans {{ allergene.plats|length }} plat(s).</p>
+
+                <p><a href="{{ path('app_employee_allergene_edit', {id: allergene.id}) }}">Modifier</a></p>
+
+                <form method="post" action="{{ path('app_employee_allergene_delete', {id: allergene.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_allergene_' ~ allergene.id) }}">
+                    <button type="submit">Supprimer</button>
+                </form>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
