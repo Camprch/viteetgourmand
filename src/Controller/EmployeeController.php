@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Avis;
 use App\Entity\Commande;
 use App\Entity\CommandeStatut;
 use App\Entity\User;
+use App\Repository\AvisRepository;
 use App\Repository\CommandeRepository;
 use App\Service\OrderWorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -140,6 +142,45 @@ final class EmployeeController extends AbstractController
         $this->addFlash('success', 'Statut mis a jour.');
 
         return $this->redirectToRoute('app_employee_order_show', ['id' => $commande->getId()]);
+    }
+
+    #[Route('/reviews', name: 'app_employee_reviews', methods: ['GET'])]
+    public function reviews(AvisRepository $avisRepository): Response
+    {
+        $this->assertEmployeeAccess();
+
+        return $this->render('employee/reviews.html.twig', [
+            'reviews' => $avisRepository->findBy([], ['createdAt' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/reviews/{id}/moderate', name: 'app_employee_review_moderate', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function moderateReview(
+        Avis $avis,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): RedirectResponse {
+        $this->assertEmployeeAccess();
+
+        if (!$this->isCsrfTokenValid('moderate_review_' . $avis->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_employee_reviews');
+        }
+
+        $action = $request->request->getString('action', '');
+        if (!in_array($action, ['validate', 'reject'], true)) {
+            $this->addFlash('error', 'Action de moderation invalide.');
+
+            return $this->redirectToRoute('app_employee_reviews');
+        }
+
+        $avis->setValide($action === 'validate');
+        $entityManager->flush();
+
+        $this->addFlash('success', $action === 'validate' ? 'Avis valide.' : 'Avis refuse.');
+
+        return $this->redirectToRoute('app_employee_reviews');
     }
 
     private function getCurrentStatus(Commande $commande): ?string
