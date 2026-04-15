@@ -34,8 +34,62 @@ final class MenuController extends AbstractController
     #[Route('/{id}', name: 'app_menu_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Menu $menu): Response
     {
+        $images = $menu->getMenuImages()->toArray();
+        usort($images, static function ($a, $b): int {
+            $principalSort = ((int) ($b->isPrincipale() ?? false)) <=> ((int) ($a->isPrincipale() ?? false));
+            if ($principalSort !== 0) {
+                return $principalSort;
+            }
+
+            return ($a->getOrdreAffichage() ?? 0) <=> ($b->getOrdreAffichage() ?? 0);
+        });
+
+        $plats = $menu->getPlats()->toArray();
+        usort($plats, static function ($a, $b): int {
+            $typeSort = strcmp((string) $a->getType(), (string) $b->getType());
+            if ($typeSort !== 0) {
+                return $typeSort;
+            }
+
+            return strcmp((string) $a->getNom(), (string) $b->getNom());
+        });
+
+        $platGroups = [
+            'entree' => [],
+            'plat' => [],
+            'dessert' => [],
+            'autre' => [],
+        ];
+
+        foreach ($plats as $plat) {
+            $type = (string) $plat->getType();
+            if (!array_key_exists($type, $platGroups)) {
+                $type = 'autre';
+            }
+
+            $allergenes = [];
+            foreach ($plat->getAllergenes() as $allergene) {
+                $allergenes[] = (string) $allergene->getNom();
+            }
+            sort($allergenes);
+
+            $platGroups[$type][] = [
+                'nom' => (string) $plat->getNom(),
+                'description' => $plat->getDescription(),
+                'allergenes' => $allergenes,
+            ];
+        }
+
         return $this->render('menu/show.html.twig', [
             'menu' => $menu,
+            'images' => $images,
+            'platGroups' => $platGroups,
+            'typeLabels' => [
+                'entree' => 'Entrees',
+                'plat' => 'Plats',
+                'dessert' => 'Desserts',
+                'autre' => 'Autres',
+            ],
         ]);
     }
 

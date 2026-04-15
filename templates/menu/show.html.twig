@@ -14,7 +14,58 @@
         {% if menu.conditionsParticulieres %}
             <p><strong>Conditions:</strong> {{ menu.conditionsParticulieres }}</p>
         {% endif %}
+    </article>
 
+    <section class="card">
+        <h2>Galerie</h2>
+        {% if images is empty %}
+            <p class="muted">Aucune image disponible pour ce menu.</p>
+        {% else %}
+            {% for image in images %}
+                <article class="card">
+                    <p><strong>{{ image.isPrincipale ? 'Image principale' : 'Image' }}</strong></p>
+                    <img
+                        src="{{ image.url }}"
+                        alt="{{ image.altText ?: 'Illustration du menu ' ~ menu.titre }}"
+                        loading="lazy"
+                        style="max-width: 100%; height: auto;"
+                    >
+                </article>
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Composition du menu</h2>
+        {% set hasPlats = false %}
+        {% for type, entries in platGroups %}
+            {% if entries is not empty %}
+                {% set hasPlats = true %}
+                <h3>{{ typeLabels[type] }}</h3>
+                {% for plat in entries %}
+                    <article class="card">
+                        <p><strong>{{ plat.nom }}</strong></p>
+                        {% if plat.description %}
+                            <p>{{ plat.description }}</p>
+                        {% endif %}
+                        <p>
+                            <strong>Allergenes:</strong>
+                            {% if plat.allergenes is empty %}
+                                Aucun
+                            {% else %}
+                                {{ plat.allergenes|join(', ') }}
+                            {% endif %}
+                        </p>
+                    </article>
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+        {% if not hasPlats %}
+            <p class="muted">Aucun plat associe a ce menu.</p>
+        {% endif %}
+    </section>
+
+    <article class="card">
         {% if app.user %}
             {% if menu.stock > 0 %}
                 <p><a href="{{ path('app_order_new', {id: menu.id}) }}">Commander ce menu</a></p>
