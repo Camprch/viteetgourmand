@@ -4,17 +4,134 @@
 
 {% block body %}
     <h1>Menus</h1>
-    {% if menus is empty %}
-        <p class="muted">Aucun menu actif.</p>
-    {% else %}
-        {% for menu in menus %}
-            <article class="card">
-                <h2>{{ menu.titre }}</h2>
-                <p>{{ menu.description }}</p>
-                <p><strong>Theme:</strong> {{ menu.theme }} | <strong>Regime:</strong> {{ menu.regime }}</p>
-                <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | <strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
-                <a href="{{ path('app_menu_show', {id: menu.id}) }}">Voir le detail</a>
-            </article>
-        {% endfor %}
-    {% endif %}
+
+    <form id="menu-filters-form" class="card" method="get">
+        <div>
+            <label for="theme">Theme</label>
+            <select id="theme" name="theme">
+                <option value="">Tous</option>
+                {% for theme in themes %}
+                    <option value="{{ theme }}" {% if filters.theme == theme %}selected{% endif %}>{{ theme }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="regime">Regime</label>
+            <select id="regime" name="regime">
+                <option value="">Tous</option>
+                {% for regime in regimes %}
+                    <option value="{{ regime }}" {% if filters.regime == regime %}selected{% endif %}>{{ regime }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="personnes_min">Personnes minimum</label>
+            <input id="personnes_min" name="personnes_min" type="number" min="0" value="{{ filters.personnes_min ?? '' }}">
+        </div>
+        <div>
+            <label for="prix_min">Prix minimum (EUR)</label>
+            <input id="prix_min" name="prix_min" type="number" min="0" step="0.01" value="{{ filters.prix_min }}">
+        </div>
+        <div>
+            <label for="prix_max">Prix maximum (EUR)</label>
+            <input id="prix_max" name="prix_max" type="number" min="0" step="0.01" value="{{ filters.prix_max }}">
+        </div>
+        <button type="submit">Filtrer</button>
+        <button type="button" id="menu-filters-reset">Reinitialiser</button>
+    </form>
+
+    <div id="menus-list">
+        {% if menus is empty %}
+            <p class="muted">Aucun menu actif selon ces filtres.</p>
+        {% else %}
+            {% for menu in menus %}
+                <article class="card">
+                    <h2>{{ menu.titre }}</h2>
+                    <p>{{ menu.description }}</p>
+                    <p><strong>Theme:</strong> {{ menu.theme }} | <strong>Regime:</strong> {{ menu.regime }}</p>
+                    <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | <strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
+                    <a href="{{ path('app_menu_show', {id: menu.id}) }}">Voir le detail</a>
+                </article>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <script>
+        (() => {
+            const form = document.getElementById('menu-filters-form');
+            const listEl = document.getElementById('menus-list');
+            const resetBtn = document.getElementById('menu-filters-reset');
+            const apiUrl = '{{ path('app_api_menus') }}';
+            const detailsUrlTemplate = '{{ path('app_menu_show', {id: '__ID__'}) }}';
+
+            if (!form || !listEl || !resetBtn) {
+                return;
+            }
+
+            const escapeHtml = (value) => String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+
+            const priceLabel = (centimes) => (Number(centimes) / 100).toFixed(2).replace('.', ',') + ' EUR';
+
+            const renderMenus = (menus) => {
+                if (!Array.isArray(menus) || menus.length === 0) {
+                    listEl.innerHTML = '<p class="muted">Aucun menu actif selon ces filtres.</p>';
+                    return;
+                }
+
+                const html = menus.map((menu) => {
+                    const detailsUrl = detailsUrlTemplate.replace('__ID__', String(menu.id));
+
+                    return `
+                        <article class="card">
+                            <h2>${escapeHtml(menu.titre)}</h2>
+                            <p>${escapeHtml(menu.description ?? '')}</p>
+                            <p><strong>Theme:</strong> ${escapeHtml(menu.theme ?? '')} | <strong>Regime:</strong> ${escapeHtml(menu.regime ?? '')}</p>
+                            <p><strong>Prix min:</strong> ${priceLabel(menu.prix_min_centimes)} | <strong>Personnes min:</strong> ${escapeHtml(menu.personnes_min ?? '')}</p>
+                            <a href="${detailsUrl}">Voir le detail</a>
+                        </article>
+                    `;
+                }).join('');
+
+                listEl.innerHTML = html;
+            };
+
+            const applyFilters = async () => {
+                const params = new URLSearchParams(new FormData(form));
+                const response = await fetch(`${apiUrl}?${params.toString()}`, {
+                    headers: { 'Accept': 'application/json' },
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const payload = await response.json();
+                renderMenus(payload.menus ?? []);
+                history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+            };
+
+            let timeoutId = null;
+            form.addEventListener('input', () => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    applyFilters().catch(() => {});
+                }, 160);
+            });
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                applyFilters().catch(() => {});
+            });
+
+            resetBtn.addEventListener('click', () => {
+                form.reset();
+                applyFilters().catch(() => {});
+            });
+        })();
+    </script>
 {% endblock %}
