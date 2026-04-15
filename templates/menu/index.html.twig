@@ -62,7 +62,7 @@
             const listEl = document.getElementById('menus-list');
             const resetBtn = document.getElementById('menu-filters-reset');
             const apiUrl = '{{ path('app_api_menus') }}';
-            const detailsUrlTemplate = '{{ path('app_menu_show', {id: '__ID__'}) }}';
+            const detailsUrlPattern = '{{ path('app_menu_show', {id: 0}) }}';
 
             if (!form || !listEl || !resetBtn) {
                 return;
@@ -84,7 +84,7 @@
                 }
 
                 const html = menus.map((menu) => {
-                    const detailsUrl = detailsUrlTemplate.replace('__ID__', String(menu.id));
+                    const detailsUrl = detailsUrlPattern.replace(/0$/, String(menu.id));
 
                     return `
                         <article class="card">
