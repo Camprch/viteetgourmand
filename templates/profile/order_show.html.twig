@@ -33,5 +33,15 @@
         <p class="muted">Avis deja depose (en attente de moderation ou valide).</p>
     {% endif %}
 
+    {% if canManage %}
+        <p><a href="{{ path('app_profile_order_edit', {id: commande.id}) }}">Modifier la commande</a></p>
+        <form method="post" action="{{ path('app_profile_order_cancel', {id: commande.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('cancel_order_' ~ commande.id) }}">
+            <button type="submit">Annuler la commande</button>
+        </form>
+    {% else %}
+        <p class="muted">Modification et annulation indisponibles (commande deja acceptee ou annulee).</p>
+    {% endif %}
+
     <p><a href="{{ path('app_profile_orders') }}">Retour a mes commandes</a></p>
 {% endblock %}
