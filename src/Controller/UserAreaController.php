@@ -6,9 +6,11 @@ use App\Entity\Avis;
 use App\Entity\Commande;
 use App\Entity\CommandeStatut;
 use App\Entity\User;
+use App\Form\ProfileEditType;
 use App\Form\ReviewFormType;
 use App\Form\UserOrderEditType;
 use App\Repository\CommandeRepository;
+use App\Repository\UserRepository;
 use App\Service\PricingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,6 +33,45 @@ final class UserAreaController extends AbstractController
 
         return $this->render('profile/index.html.twig', [
             'user' => $user,
+        ]);
+    }
+
+    #[Route('/edit', name: 'app_profile_edit', methods: ['GET', 'POST'])]
+    public function editProfile(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository
+    ): Response {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $form = $this->createForm(ProfileEditType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = mb_strtolower(trim((string) $user->getEmail()));
+            $user->setEmail($email);
+
+            $existingUser = $userRepository->findOneBy(['email' => $email]);
+            if ($existingUser instanceof User && $existingUser->getId() !== $user->getId()) {
+                $this->addFlash('error', 'Cet email est deja utilise.');
+
+                return $this->render('profile/edit.html.twig', [
+                    'profileForm' => $form,
+                ]);
+            }
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Profil mis a jour.');
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        return $this->render('profile/edit.html.twig', [
+            'profileForm' => $form,
         ]);
     }
 
