@@ -18,7 +18,6 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 #[Route('/reset-password')]
 final class PasswordResetController extends AbstractController
@@ -59,9 +58,10 @@ final class PasswordResetController extends AbstractController
                 $entityManager->persist($token);
                 $entityManager->flush();
 
-                $resetUrl = $this->generateUrl('app_password_reset_reset', [
+                $resetPath = $this->generateUrl('app_password_reset_reset', [
                     'token' => $tokenValue,
-                ], UrlGeneratorInterface::ABSOLUTE_URL);
+                ]);
+                $resetUrl = rtrim($request->getSchemeAndHttpHost(), '/') . $resetPath;
 
                 try {
                     $message = (new TemplatedEmail())
