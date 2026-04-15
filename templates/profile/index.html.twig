@@ -12,5 +12,6 @@
         <p><strong>Adresse:</strong> {{ user.adresse ?: 'Non renseignee' }}</p>
     </article>
 
+    <p><a href="{{ path('app_profile_edit') }}">Modifier mes informations</a></p>
     <p><a href="{{ path('app_profile_orders') }}">Voir mes commandes</a></p>
 {% endblock %}
