@@ -7,7 +7,7 @@ Ce manuel explique les parcours principaux pour les roles User, Employe et Admin
 ## 2. Acces application
 
 - URL locale: `http://127.0.0.1:8000`
-- Mailpit (mails): `http://127.0.0.1:<PORT_MAILPIT_UI>`
+- Mailpit (mails): `http://127.0.0.1:8025`
 
 ## 3. Comptes de test
 
@@ -67,9 +67,9 @@ Si mot de passe inconnu, utiliser le reset via `/reset-password`.
   - verifier Mailpit UI
   - verifier `MAILER_DSN` dans `.env.local`
 - Erreur DB:
-  - verifier port MariaDB + `DATABASE_URL`
+  - verifier port MariaDB `3307` + `DATABASE_URL`
 - Analytics indisponibles:
-  - verifier `MONGODB_URL`, `MONGODB_DB` et conteneur MongoDB
+  - verifier `MONGODB_URL` (`127.0.0.1:27017`), `MONGODB_DB` et conteneur MongoDB
 
 ## 10. Smoke test rapide avant livraison
 
