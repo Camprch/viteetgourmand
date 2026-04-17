@@ -16,15 +16,19 @@
     {% if statuts is empty %}
         <p class="muted">Aucun statut disponible.</p>
     {% else %}
+        <ol aria-label="Historique des statuts de commande">
         {% for item in statuts %}
-            <article class="card">
-                <p><strong>{{ item.statut }}</strong></p>
-                <p>{{ item.dateHeure|date('d/m/Y H:i') }}</p>
-                {% if item.commentaire %}
-                    <p class="muted">{{ item.commentaire }}</p>
-                {% endif %}
-            </article>
+            <li>
+                <article class="card">
+                    <h3>{{ item.statut }}</h3>
+                    <p>{{ item.dateHeure|date('d/m/Y H:i') }}</p>
+                    {% if item.commentaire %}
+                        <p class="muted">{{ item.commentaire }}</p>
+                    {% endif %}
+                </article>
+            </li>
         {% endfor %}
+        </ol>
     {% endif %}
 
     {% if canReview %}

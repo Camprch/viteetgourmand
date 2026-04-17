@@ -5,7 +5,8 @@
 {% block body %}
     <h1>Menus</h1>
 
-    <form id="menu-filters-form" class="card" method="get">
+    <form id="menu-filters-form" class="card" method="get" aria-labelledby="filters-title">
+        <h2 id="filters-title">Filtres de recherche</h2>
         <div>
             <label for="theme">Theme</label>
             <select id="theme" name="theme">
@@ -40,7 +41,7 @@
         <button type="button" id="menu-filters-reset">Reinitialiser</button>
     </form>
 
-    <div id="menus-list">
+    <div id="menus-list" aria-live="polite" aria-busy="false">
         {% if menus is empty %}
             <p class="muted">Aucun menu actif selon ces filtres.</p>
         {% else %}
@@ -102,16 +103,19 @@
 
             const applyFilters = async () => {
                 const params = new URLSearchParams(new FormData(form));
+                listEl.setAttribute('aria-busy', 'true');
                 const response = await fetch(`${apiUrl}?${params.toString()}`, {
                     headers: { 'Accept': 'application/json' },
                 });
 
                 if (!response.ok) {
+                    listEl.setAttribute('aria-busy', 'false');
                     return;
                 }
 
                 const payload = await response.json();
                 renderMenus(payload.menus ?? []);
+                listEl.setAttribute('aria-busy', 'false');
                 history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
             };
 
