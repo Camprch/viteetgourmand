@@ -23,10 +23,10 @@ Exemple `.env.local`:
 
 ```dotenv
 APP_SECRET=<secret_local>
-DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:<PORT_DB>/viteetgourmand?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
-MONGODB_URL="mongodb://127.0.0.1:<PORT_MONGO>"
+DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3307/viteetgourmand?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
+MONGODB_URL="mongodb://127.0.0.1:27017"
 MONGODB_DB="viteetgourmand_stats"
-MAILER_DSN="smtp://127.0.0.1:<PORT_SMTP_MAILPIT>"
+MAILER_DSN="smtp://127.0.0.1:1025"
 ```
 
 Points importants:
@@ -47,30 +47,28 @@ composer install
 ### 4.2 Demarrage services
 
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
 
-### 4.3 Recuperation ports dynamiques
+### 4.3 Ports locaux (fixes)
 
-```bash
-docker compose port database 3306
-docker compose port mongodb 27017
-docker compose port mailer 1025
-docker compose port mailer 8025
-```
+- MariaDB: `127.0.0.1:3307`
+- MongoDB: `127.0.0.1:27017`
+- Mailpit SMTP: `127.0.0.1:1025`
+- Mailpit UI: `http://127.0.0.1:8025`
 
 ### 4.4 Initialisation SQL
 
 ```bash
-mysql -h 127.0.0.1 -P <PORT_DB> -u app -p'!ChangeMe!' viteetgourmand < database/schema.sql
-mysql -h 127.0.0.1 -P <PORT_DB> -u app -p'!ChangeMe!' viteetgourmand < database/seed.sql
+mysql -h 127.0.0.1 -P 3307 -u app -p'!ChangeMe!' viteetgourmand < database/schema.sql
+mysql -h 127.0.0.1 -P 3307 -u app -p'!ChangeMe!' viteetgourmand < database/seed.sql
 ```
 
 ## 5. Demarrage quotidien (chaque session)
 
 ```bash
 cd /home/cam/dev/viteetgourmand
-docker compose up -d
+docker-compose up -d
 php -S 127.0.0.1:8000 -t public
 ```
 
@@ -83,7 +81,7 @@ symfony serve -d
 Acces:
 
 - App: `http://127.0.0.1:8000`
-- Mailpit UI: `http://127.0.0.1:<PORT_MAILPIT_UI>`
+- Mailpit UI: `http://127.0.0.1:8025`
 
 ## 6. Base non relationnelle (MongoDB)
 
