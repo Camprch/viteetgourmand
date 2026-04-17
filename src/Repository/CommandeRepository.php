@@ -37,6 +37,39 @@ class CommandeRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @return list<array{
+     *     id:int,
+     *     menu_id:int,
+     *     menu_titre:string,
+     *     prix_total_centimes:int,
+     *     date_commande:\DateTimeImmutable
+     * }>
+     */
+    public function findAllForAnalyticsProjection(): array
+    {
+        /** @var list<array{
+         *     id:int,
+         *     menu_id:int,
+         *     menu_titre:string,
+         *     prix_total_centimes:int,
+         *     date_commande:\DateTimeImmutable
+         * }> $rows
+         */
+        $rows = $this->createQueryBuilder('c')
+            ->select('c.id AS id')
+            ->addSelect('IDENTITY(c.menu) AS menu_id')
+            ->addSelect('m.titre AS menu_titre')
+            ->addSelect('c.prixTotalCentimes AS prix_total_centimes')
+            ->addSelect('c.dateCommande AS date_commande')
+            ->leftJoin('c.menu', 'm')
+            ->orderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $rows;
+    }
+
 //    /**
 //     * @return Commande[] Returns an array of Commande objects
 //     */
