@@ -24,4 +24,54 @@
             </article>
         {% endfor %}
     {% endif %}
+
+    <h2>Dashboard commandes (MongoDB)</h2>
+    {% if ordersByMenu is empty %}
+        <p class="muted">Aucune donnee analytics disponible pour le moment.</p>
+    {% else %}
+        <p class="muted">Comparatif du nombre de commandes par menu.</p>
+        {% for row in ordersByMenu %}
+            {% set width = maxOrders > 0 ? ((row.commandes * 100) / maxOrders)|round(0, 'ceil') : 0 %}
+            <article class="card">
+                <p><strong>{{ row.menu_titre }}</strong> - {{ row.commandes }} commande(s)</p>
+                <div style="max-width: 520px; background:#f0f0f0; border:1px solid #ddd; height:16px;">
+                    <div style="width: {{ width }}%; background:#3b7ddd; height:100%;"></div>
+                </div>
+            </article>
+        {% endfor %}
+    {% endif %}
+
+    <h2>Chiffre d'affaires par menu</h2>
+    <form method="get" action="{{ path('app_admin_dashboard') }}" class="card">
+        <div>
+            <label for="menu_id">Menu</label>
+            <select id="menu_id" name="menu_id">
+                <option value="">Tous les menus</option>
+                {% for menu in menus %}
+                    <option value="{{ menu.id }}" {% if filters.menu_id == menu.id %}selected{% endif %}>{{ menu.titre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="date_from">Date debut</label>
+            <input id="date_from" type="date" name="date_from" value="{{ filters.date_from }}">
+        </div>
+        <div>
+            <label for="date_to">Date fin</label>
+            <input id="date_to" type="date" name="date_to" value="{{ filters.date_to }}">
+        </div>
+        <button type="submit">Appliquer filtres</button>
+    </form>
+
+    {% if revenueByMenu is empty %}
+        <p class="muted">Aucune commande sur ce filtre.</p>
+    {% else %}
+        {% for row in revenueByMenu %}
+            <article class="card">
+                <p><strong>{{ row.menu_titre }}</strong></p>
+                <p>Commandes: {{ row.commandes }}</p>
+                <p>CA: {{ (row.chiffre_affaires_centimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+            </article>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
