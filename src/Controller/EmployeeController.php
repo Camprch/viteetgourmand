@@ -23,10 +23,14 @@ use App\Service\OrderWorkflowService;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/employee')]
@@ -41,6 +45,12 @@ final class EmployeeController extends AbstractController
         6 => 'Samedi',
         7 => 'Dimanche',
     ];
+
+    public function __construct(
+        #[Autowire('%app.contact_sender%')]
+        private readonly string $sender,
+    ) {
+    }
 
     #[Route('', name: 'app_employee_dashboard', methods: ['GET'])]
     public function index(): RedirectResponse
@@ -112,7 +122,8 @@ final class EmployeeController extends AbstractController
         Commande $commande,
         Request $request,
         OrderWorkflowService $workflowService,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer
     ): RedirectResponse {
         $this->assertEmployeeAccess();
 
@@ -161,6 +172,14 @@ final class EmployeeController extends AbstractController
 
         $entityManager->persist($statut);
         $entityManager->flush();
+
+        $this->sendOrderStatusNotification(
+            commande: $commande,
+            newStatus: $newStatus,
+            modeContact: $modeContact,
+            motif: $motif,
+            mailer: $mailer,
+        );
 
         $this->addFlash('success', 'Statut mis a jour.');
 
@@ -558,6 +577,56 @@ final class EmployeeController extends AbstractController
         }
 
         return $latest?->getStatut();
+    }
+
+    private function sendOrderStatusNotification(
+        Commande $commande,
+        string $newStatus,
+        string $modeContact,
+        string $motif,
+        MailerInterface $mailer
+    ): void {
+        $user = $commande->getUser();
+        if (!$user instanceof User || $user->getEmail() === null) {
+            return;
+        }
+
+        $template = null;
+        $subject = null;
+        $context = [
+            'commande' => $commande,
+            'user' => $user,
+            'modeContact' => $modeContact,
+            'motif' => $motif,
+        ];
+
+        if ($newStatus === 'annulee') {
+            $template = 'emails/order_cancelled.html.twig';
+            $subject = 'Mise a jour de votre commande: annulation';
+        } elseif ($newStatus === 'attente_retour_materiel') {
+            $template = 'emails/order_material_return_notice.html.twig';
+            $subject = 'Retour de materiel: information importante';
+        } elseif ($newStatus === 'terminee') {
+            $template = 'emails/order_review_request.html.twig';
+            $subject = 'Votre commande est terminee - laissez votre avis';
+        }
+
+        if ($template === null || $subject === null) {
+            return;
+        }
+
+        try {
+            $mailer->send(
+                (new TemplatedEmail())
+                    ->from($this->sender)
+                    ->to((string) $user->getEmail())
+                    ->subject($subject)
+                    ->htmlTemplate($template)
+                    ->context($context)
+            );
+        } catch (TransportExceptionInterface) {
+            // Keep status update successful even if mail transport is unavailable.
+        }
     }
 
     private function assertEmployeeAccess(): void
