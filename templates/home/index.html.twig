@@ -10,12 +10,16 @@
     {% if avis is empty %}
         <p class="muted">Aucun avis valide pour le moment.</p>
     {% else %}
+        <ul aria-label="Liste des avis clients">
         {% for item in avis %}
-            <article class="card">
-                <strong>Note: {{ item.note }}/5</strong>
-                <p>{{ item.commentaire }}</p>
-                <small class="muted">{{ item.createdAt|date('d/m/Y H:i') }}</small>
-            </article>
+            <li>
+                <article class="card">
+                    <strong>Note: {{ item.note }}/5</strong>
+                    <p>{{ item.commentaire }}</p>
+                    <small class="muted">{{ item.createdAt|date('d/m/Y H:i') }}</small>
+                </article>
+            </li>
         {% endfor %}
+        </ul>
     {% endif %}
 {% endblock %}
