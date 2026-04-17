@@ -7,10 +7,14 @@ use App\Form\AdminEmployeeCreateType;
 use App\Repository\UserRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -19,6 +23,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class AdminController extends AbstractController
 {
+    public function __construct(
+        #[Autowire('%app.contact_sender%')]
+        private readonly string $sender,
+    ) {
+    }
+
     #[Route('', name: 'app_admin_dashboard', methods: ['GET'])]
     public function index(UserRepository $userRepository): Response
     {
@@ -31,7 +41,8 @@ final class AdminController extends AbstractController
     public function createEmployee(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer
     ): Response {
         $form = $this->createForm(AdminEmployeeCreateType::class);
         $form->handleRequest($request);
@@ -60,6 +71,21 @@ final class AdminController extends AbstractController
                 return $this->render('admin/employee_new.html.twig', [
                     'employeeForm' => $form,
                 ]);
+            }
+
+            try {
+                $mailer->send(
+                    (new TemplatedEmail())
+                        ->from($this->sender)
+                        ->to((string) $employee->getEmail())
+                        ->subject('Creation de votre compte employe')
+                        ->htmlTemplate('emails/employee_account_created.html.twig')
+                        ->context([
+                            'employee' => $employee,
+                        ])
+                );
+            } catch (TransportExceptionInterface) {
+                // Keep employee creation successful even if mail transport is unavailable.
             }
 
             $this->addFlash('success', 'Compte employe cree (ROLE_EMPLOYEE).');
