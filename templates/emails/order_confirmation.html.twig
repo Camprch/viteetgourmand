@@ -1,0 +1,14 @@
+<p>Bonjour {{ user.prenom ?: 'client' }},</p>
+
+<p>Ta commande <strong>#{{ commande.id }}</strong> a bien ete enregistree.</p>
+
+<ul>
+    <li>Menu: {{ commande.menu.titre }}</li>
+    <li>Date prestation: {{ commande.datePrestation|date('d/m/Y') }} a {{ commande.heurePrestation|date('H:i') }}</li>
+    <li>Adresse: {{ commande.adressePrestation }}</li>
+    <li>Total: {{ (commande.prixTotalCentimes / 100)|number_format(2, ',', ' ') }} EUR</li>
+</ul>
+
+<p>Nous reviendrons vers toi des que la commande sera prise en charge.</p>
+
+<p>A tres vite,<br>L'equipe Vite & Gourmand</p>
