@@ -9,7 +9,8 @@
         <div class="flash flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" aria-describedby="login-help">
+        <p id="login-help" class="muted">Connecte-toi avec ton email et ton mot de passe.</p>
         <div>
             <label for="username">Email</label>
             <input type="email" value="{{ last_username }}" name="_username" id="username" autocomplete="email" required autofocus>
