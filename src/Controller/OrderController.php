@@ -9,9 +9,13 @@ use App\Entity\User;
 use App\Form\OrderFormType;
 use App\Service\PricingService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -19,12 +23,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class OrderController extends AbstractController
 {
+    public function __construct(
+        #[Autowire('%app.contact_sender%')]
+        private readonly string $sender,
+    ) {
+    }
+
     #[Route('/new/{id}', name: 'app_order_new', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function new(
         Menu $menu,
         Request $request,
         EntityManagerInterface $entityManager,
-        PricingService $pricingService
+        PricingService $pricingService,
+        MailerInterface $mailer
     ): Response {
         $user = $this->getUser();
         if (!$user instanceof User) {
@@ -104,6 +115,22 @@ final class OrderController extends AbstractController
             $entityManager->persist($commande);
             $entityManager->persist($statutInitial);
             $entityManager->flush();
+
+            try {
+                $mailer->send(
+                    (new TemplatedEmail())
+                        ->from($this->sender)
+                        ->to((string) $user->getEmail())
+                        ->subject('Confirmation de votre commande')
+                        ->htmlTemplate('emails/order_confirmation.html.twig')
+                        ->context([
+                            'user' => $user,
+                            'commande' => $commande,
+                        ])
+                );
+            } catch (TransportExceptionInterface) {
+                // Keep order creation successful even if mail transport is unavailable.
+            }
 
             $this->addFlash('success', 'Commande enregistree avec succes.');
 
