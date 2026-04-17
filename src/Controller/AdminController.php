@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\AdminEmployeeCreateType;
+use App\Repository\MenuRepository;
 use App\Repository\UserRepository;
+use App\Service\AdminAnalyticsService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -30,10 +32,62 @@ final class AdminController extends AbstractController
     }
 
     #[Route('', name: 'app_admin_dashboard', methods: ['GET'])]
-    public function index(UserRepository $userRepository): Response
+    public function index(
+        Request $request,
+        UserRepository $userRepository,
+        MenuRepository $menuRepository,
+        AdminAnalyticsService $analyticsService
+    ): Response
     {
+        $menuId = $request->query->getInt('menu_id', 0);
+        $menuIdFilter = $menuId > 0 ? $menuId : null;
+
+        $dateFromInput = trim($request->query->getString('date_from', ''));
+        $dateToInput = trim($request->query->getString('date_to', ''));
+        $dateFrom = $this->parseDate($dateFromInput);
+        $dateTo = $this->parseDate($dateToInput);
+
+        if ($dateFromInput !== '' && !$dateFrom instanceof \DateTimeImmutable) {
+            $this->addFlash('error', 'Date de debut invalide (format attendu: YYYY-MM-DD).');
+        }
+        if ($dateToInput !== '' && !$dateTo instanceof \DateTimeImmutable) {
+            $this->addFlash('error', 'Date de fin invalide (format attendu: YYYY-MM-DD).');
+        }
+
+        if ($dateFrom instanceof \DateTimeImmutable && $dateTo instanceof \DateTimeImmutable && $dateFrom > $dateTo) {
+            $this->addFlash('error', 'La date de debut doit etre inferieure ou egale a la date de fin.');
+            $dateFrom = null;
+            $dateTo = null;
+        }
+
+        $ordersByMenu = [];
+        $revenueByMenu = [];
+        try {
+            $analyticsService->refreshProjectionFromSql();
+            $ordersByMenu = $analyticsService->countOrdersByMenu();
+            $revenueByMenu = $analyticsService->revenueByMenu($menuIdFilter, $dateFrom, $dateTo);
+        } catch (\Throwable) {
+            $this->addFlash('error', 'Analytics indisponibles: verifier la connexion MongoDB.');
+        }
+
+        $maxOrders = 0;
+        foreach ($ordersByMenu as $row) {
+            if ($row['commandes'] > $maxOrders) {
+                $maxOrders = $row['commandes'];
+            }
+        }
+
         return $this->render('admin/index.html.twig', [
             'employees' => $userRepository->findEmployees(),
+            'menus' => $menuRepository->findBy([], ['titre' => 'ASC']),
+            'ordersByMenu' => $ordersByMenu,
+            'maxOrders' => $maxOrders,
+            'revenueByMenu' => $revenueByMenu,
+            'filters' => [
+                'menu_id' => $menuIdFilter,
+                'date_from' => $dateFromInput,
+                'date_to' => $dateToInput,
+            ],
         ]);
     }
 
@@ -123,5 +177,19 @@ final class AdminController extends AbstractController
         $this->addFlash('success', 'Statut employe mis a jour.');
 
         return $this->redirectToRoute('app_admin_dashboard');
+    }
+
+    private function parseDate(string $value): ?\DateTimeImmutable
+    {
+        if ($value === '') {
+            return null;
+        }
+
+        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        if (!$parsed instanceof \DateTimeImmutable) {
+            return null;
+        }
+
+        return $parsed->setTime(0, 0);
     }
 }
