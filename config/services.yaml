@@ -9,6 +9,7 @@
 parameters:
     app.contact_recipient: '%env(string:CONTACT_RECIPIENT)%'
     app.contact_sender: '%env(string:CONTACT_SENDER)%'
+    app.mongodb_db: '%env(string:MONGODB_DB)%'
 
 services:
     # default configuration for services in *this* file
@@ -20,6 +21,14 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+
+    MongoDB\Client:
+        arguments:
+            - '%env(string:MONGODB_URL)%'
+
+    App\Service\AdminAnalyticsService:
+        arguments:
+            $mongoDbName: '%app.mongodb_db%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
