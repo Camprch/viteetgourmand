@@ -23,6 +23,24 @@
                 .muted { color: #666; }
                 .footer-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
                 .footer-links { display: flex; gap: 12px; flex-wrap: wrap; }
+                a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+                    outline: 3px solid #005fcc;
+                    outline-offset: 2px;
+                }
+                .skip-link {
+                    position: absolute;
+                    left: -9999px;
+                    top: 0;
+                    background: #005fcc;
+                    color: #fff;
+                    padding: 10px 14px;
+                    z-index: 1000;
+                    text-decoration: none;
+                }
+                .skip-link:focus {
+                    left: 8px;
+                    top: 8px;
+                }
             </style>
         {% endblock %}
 
@@ -38,8 +56,9 @@
         {% endif %}
     </head>
     <body>
-        <header>
-            <nav>
+        <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+        <header role="banner">
+            <nav aria-label="Navigation principale">
                 <a href="{{ path('app_home') }}">Accueil</a>
                 <a href="{{ path('app_menu_index') }}">Menus</a>
                 <a href="{{ path('app_contact') }}">Contact</a>
@@ -60,16 +79,16 @@
                 {% endif %}
             </nav>
         </header>
-        <main>
+        <main id="main-content" role="main" tabindex="-1">
             {% for message in app.flashes('success') %}
-                <div class="flash flash-success">{{ message }}</div>
+                <div class="flash flash-success" role="status" aria-live="polite">{{ message }}</div>
             {% endfor %}
             {% for message in app.flashes('error') %}
-                <div class="flash flash-error">{{ message }}</div>
+                <div class="flash flash-error" role="alert" aria-live="assertive">{{ message }}</div>
             {% endfor %}
             {% block body %}{% endblock %}
         </main>
-        <footer>
+        <footer role="contentinfo">
             {% set horaires = vg_footer_horaires() %}
             <div class="footer-grid">
                 <section>
