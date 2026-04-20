@@ -2,60 +2,141 @@
 
 {% block title %}Menus - Vite & Gourmand{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .menu-page-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .menu-page-head p {
+            margin: 0;
+            color: #6d6459;
+        }
+        .menu-layout {
+            display: grid;
+            gap: 16px;
+            align-items: start;
+            grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+        }
+        #menu-filters-form {
+            position: sticky;
+            top: 86px;
+            margin-bottom: 0;
+        }
+        .menu-filter-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .menu-filter-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        #menus-list {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+        }
+        .menu-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+        .menu-card h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        .menu-meta {
+            margin: 0;
+            color: #675c4f;
+            font-size: 0.95rem;
+        }
+        .menu-stats {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .menu-card-link {
+            margin-top: auto;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        @media (max-width: 940px) {
+            .menu-layout { grid-template-columns: 1fr; }
+            #menu-filters-form { position: static; }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-    <h1>Menus</h1>
-
-    <form id="menu-filters-form" class="card" method="get" aria-labelledby="filters-title">
-        <h2 id="filters-title">Filtres de recherche</h2>
-        <div>
-            <label for="theme">Theme</label>
-            <select id="theme" name="theme">
-                <option value="">Tous</option>
-                {% for theme in themes %}
-                    <option value="{{ theme }}" {% if filters.theme == theme %}selected{% endif %}>{{ theme }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="regime">Regime</label>
-            <select id="regime" name="regime">
-                <option value="">Tous</option>
-                {% for regime in regimes %}
-                    <option value="{{ regime }}" {% if filters.regime == regime %}selected{% endif %}>{{ regime }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="personnes_min">Personnes minimum</label>
-            <input id="personnes_min" name="personnes_min" type="number" min="0" value="{{ filters.personnes_min ?? '' }}">
-        </div>
-        <div>
-            <label for="prix_min">Prix minimum (EUR)</label>
-            <input id="prix_min" name="prix_min" type="number" min="0" step="0.01" value="{{ filters.prix_min }}">
-        </div>
-        <div>
-            <label for="prix_max">Prix maximum (EUR)</label>
-            <input id="prix_max" name="prix_max" type="number" min="0" step="0.01" value="{{ filters.prix_max }}">
-        </div>
-        <button type="submit">Filtrer</button>
-        <button type="button" id="menu-filters-reset">Reinitialiser</button>
-    </form>
-
-    <div id="menus-list" aria-live="polite" aria-busy="false">
-        {% if menus is empty %}
-            <p class="muted">Aucun menu actif selon ces filtres.</p>
-        {% else %}
-            {% for menu in menus %}
-                <article class="card">
-                    <h2>{{ menu.titre }}</h2>
-                    <p>{{ menu.description }}</p>
-                    <p><strong>Theme:</strong> {{ menu.theme }} | <strong>Regime:</strong> {{ menu.regime }}</p>
-                    <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | <strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
-                    <a href="{{ path('app_menu_show', {id: menu.id}) }}">Voir le detail</a>
-                </article>
-            {% endfor %}
-        {% endif %}
+    <div class="menu-page-head">
+        <h1>Menus</h1>
+        <p>Filtre en direct sans rechargement de page.</p>
     </div>
+
+    <section class="menu-layout">
+        <form id="menu-filters-form" class="card" method="get" aria-labelledby="filters-title">
+            <h2 id="filters-title">Filtres de recherche</h2>
+            <div class="menu-filter-grid">
+                <div>
+                    <label for="theme">Theme</label>
+                    <select id="theme" name="theme">
+                        <option value="">Tous</option>
+                        {% for theme in themes %}
+                            <option value="{{ theme }}" {% if filters.theme == theme %}selected{% endif %}>{{ theme }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="regime">Regime</label>
+                    <select id="regime" name="regime">
+                        <option value="">Tous</option>
+                        {% for regime in regimes %}
+                            <option value="{{ regime }}" {% if filters.regime == regime %}selected{% endif %}>{{ regime }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="personnes_min">Personnes minimum</label>
+                    <input id="personnes_min" name="personnes_min" type="number" min="0" value="{{ filters.personnes_min ?? '' }}">
+                </div>
+                <div>
+                    <label for="prix_min">Prix minimum (EUR)</label>
+                    <input id="prix_min" name="prix_min" type="number" min="0" step="0.01" value="{{ filters.prix_min }}">
+                </div>
+                <div>
+                    <label for="prix_max">Prix maximum (EUR)</label>
+                    <input id="prix_max" name="prix_max" type="number" min="0" step="0.01" value="{{ filters.prix_max }}">
+                </div>
+            </div>
+            <div class="menu-filter-actions">
+                <button type="submit">Filtrer</button>
+                <button type="button" id="menu-filters-reset">Reinitialiser</button>
+            </div>
+        </form>
+
+        <div id="menus-list" aria-live="polite" aria-busy="false">
+            {% if menus is empty %}
+                <p class="muted">Aucun menu actif selon ces filtres.</p>
+            {% else %}
+                {% for menu in menus %}
+                    <article class="card menu-card">
+                        <h2>{{ menu.titre }}</h2>
+                        <p>{{ menu.description }}</p>
+                        <p class="menu-meta"><strong>Theme:</strong> {{ menu.theme }} | <strong>Regime:</strong> {{ menu.regime }}</p>
+                        <p class="menu-stats"><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | <strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
+                        <a class="menu-card-link" href="{{ path('app_menu_show', {id: menu.id}) }}">Voir le detail</a>
+                    </article>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
 
     <script>
         (() => {
@@ -88,12 +169,12 @@
                     const detailsUrl = detailsUrlPattern.replace(/0$/, String(menu.id));
 
                     return `
-                        <article class="card">
+                        <article class="card menu-card">
                             <h2>${escapeHtml(menu.titre)}</h2>
                             <p>${escapeHtml(menu.description ?? '')}</p>
-                            <p><strong>Theme:</strong> ${escapeHtml(menu.theme ?? '')} | <strong>Regime:</strong> ${escapeHtml(menu.regime ?? '')}</p>
-                            <p><strong>Prix min:</strong> ${priceLabel(menu.prix_min_centimes)} | <strong>Personnes min:</strong> ${escapeHtml(menu.personnes_min ?? '')}</p>
-                            <a href="${detailsUrl}">Voir le detail</a>
+                            <p class="menu-meta"><strong>Theme:</strong> ${escapeHtml(menu.theme ?? '')} | <strong>Regime:</strong> ${escapeHtml(menu.regime ?? '')}</p>
+                            <p class="menu-stats"><strong>Prix min:</strong> ${priceLabel(menu.prix_min_centimes)} | <strong>Personnes min:</strong> ${escapeHtml(menu.personnes_min ?? '')}</p>
+                            <a class="menu-card-link" href="${detailsUrl}">Voir le detail</a>
                         </article>
                     `;
                 }).join('');

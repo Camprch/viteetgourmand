@@ -2,82 +2,135 @@
 
 {% block title %}{{ menu.titre }} - Vite & Gourmand{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .menu-show-layout {
+            display: grid;
+            gap: 14px;
+        }
+        .menu-facts {
+            display: grid;
+            gap: 8px;
+            margin: 0;
+        }
+        .menu-facts p { margin: 0; }
+        .gallery-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        }
+        .gallery-card {
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+        .gallery-card img {
+            max-width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #dccbb5;
+        }
+        .plats-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        }
+        .plat-card {
+            margin-bottom: 0;
+            background: #fff;
+        }
+        .order-cta {
+            display: inline-block;
+            text-decoration: none;
+            font-weight: 700;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-    <article class="card">
-        <h1>{{ menu.titre }}</h1>
-        <p>{{ menu.description }}</p>
-        <p><strong>Theme:</strong> {{ menu.theme }}</p>
-        <p><strong>Regime:</strong> {{ menu.regime }}</p>
-        <p><strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
-        <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
-        <p><strong>Stock:</strong> {{ menu.stock }}</p>
-        {% if menu.conditionsParticulieres %}
-            <p><strong>Conditions:</strong> {{ menu.conditionsParticulieres }}</p>
-        {% endif %}
-    </article>
+    <div class="menu-show-layout">
+        <article class="card">
+            <h1>{{ menu.titre }}</h1>
+            <p>{{ menu.description }}</p>
+            <div class="menu-facts">
+                <p><strong>Theme:</strong> {{ menu.theme }}</p>
+                <p><strong>Regime:</strong> {{ menu.regime }}</p>
+                <p><strong>Personnes min:</strong> {{ menu.personnesMin }}</p>
+                <p><strong>Prix min:</strong> {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+                <p><strong>Stock:</strong> {{ menu.stock }}</p>
+                {% if menu.conditionsParticulieres %}
+                    <p><strong>Conditions:</strong> {{ menu.conditionsParticulieres }}</p>
+                {% endif %}
+            </div>
+        </article>
 
-    <section class="card">
-        <h2>Galerie</h2>
-        {% if images is empty %}
-            <p class="muted">Aucune image disponible pour ce menu.</p>
-        {% else %}
-            {% for image in images %}
-                <article class="card">
-                    <p><strong>{{ image.isPrincipale ? 'Image principale' : 'Image' }}</strong></p>
-                    <img
-                        src="{{ image.url }}"
-                        alt="{{ image.altText ?: 'Illustration du menu ' ~ menu.titre }}"
-                        loading="lazy"
-                        style="max-width: 100%; height: auto;"
-                    >
-                </article>
-            {% endfor %}
-        {% endif %}
-    </section>
-
-    <section class="card">
-        <h2>Composition du menu</h2>
-        {% set hasPlats = false %}
-        {% for type, entries in platGroups %}
-            {% if entries is not empty %}
-                {% set hasPlats = true %}
-                <h3>{{ typeLabels[type] }}</h3>
-                {% for plat in entries %}
-                    <article class="card">
-                        <p><strong>{{ plat.nom }}</strong></p>
-                        {% if plat.description %}
-                            <p>{{ plat.description }}</p>
-                        {% endif %}
-                        <p>
-                            <strong>Allergenes:</strong>
-                            {% if plat.allergenes is empty %}
-                                Aucun
-                            {% else %}
-                                {{ plat.allergenes|join(', ') }}
-                            {% endif %}
-                        </p>
-                    </article>
-                {% endfor %}
-            {% endif %}
-        {% endfor %}
-        {% if not hasPlats %}
-            <p class="muted">Aucun plat associe a ce menu.</p>
-        {% endif %}
-    </section>
-
-    <article class="card">
-        {% if app.user %}
-            {% if menu.stock > 0 %}
-                <p><a href="{{ path('app_order_new', {id: menu.id}) }}">Commander ce menu</a></p>
+        <section class="card">
+            <h2>Galerie</h2>
+            {% if images is empty %}
+                <p class="muted">Aucune image disponible pour ce menu.</p>
             {% else %}
-                <p class="muted">Menu indisponible (stock epuise).</p>
+                <div class="gallery-grid">
+                    {% for image in images %}
+                        <article class="card gallery-card">
+                            <p><strong>{{ image.isPrincipale ? 'Image principale' : 'Image' }}</strong></p>
+                            <img
+                                src="{{ image.url }}"
+                                alt="{{ image.altText ?: 'Illustration du menu ' ~ menu.titre }}"
+                                loading="lazy"
+                            >
+                        </article>
+                    {% endfor %}
+                </div>
             {% endif %}
-        {% else %}
-            <p>
-                <a href="{{ path('app_login') }}">Connecte-toi</a> ou
-                <a href="{{ path('app_register') }}">cree un compte</a>
-                pour commander ce menu.
-            </p>
-        {% endif %}
-    </article>
+        </section>
+
+        <section class="card">
+            <h2>Composition du menu</h2>
+            {% set hasPlats = false %}
+            {% for type, entries in platGroups %}
+                {% if entries is not empty %}
+                    {% set hasPlats = true %}
+                    <h3>{{ typeLabels[type] }}</h3>
+                    <div class="plats-grid">
+                        {% for plat in entries %}
+                            <article class="card plat-card">
+                                <p><strong>{{ plat.nom }}</strong></p>
+                                {% if plat.description %}
+                                    <p>{{ plat.description }}</p>
+                                {% endif %}
+                                <p>
+                                    <strong>Allergenes:</strong>
+                                    {% if plat.allergenes is empty %}
+                                        Aucun
+                                    {% else %}
+                                        {{ plat.allergenes|join(', ') }}
+                                    {% endif %}
+                                </p>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {% if not hasPlats %}
+                <p class="muted">Aucun plat associe a ce menu.</p>
+            {% endif %}
+        </section>
+
+        <article class="card">
+            {% if app.user %}
+                {% if menu.stock > 0 %}
+                    <p><a class="order-cta" href="{{ path('app_order_new', {id: menu.id}) }}">Commander ce menu</a></p>
+                {% else %}
+                    <p class="muted">Menu indisponible (stock epuise).</p>
+                {% endif %}
+            {% else %}
+                <p>
+                    <a href="{{ path('app_login') }}">Connecte-toi</a> ou
+                    <a href="{{ path('app_register') }}">cree un compte</a>
+                    pour commander ce menu.
+                </p>
+            {% endif %}
+        </article>
+    </div>
 {% endblock %}
