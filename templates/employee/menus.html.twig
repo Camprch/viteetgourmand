@@ -23,6 +23,7 @@
                 <p>Theme: {{ menu.theme }} | Regime: {{ menu.regime }}</p>
                 <p>Prix min: {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | Personnes min: {{ menu.personnesMin }}</p>
                 <p>Stock: {{ menu.stock }} | Actif: {{ menu.actif ? 'Oui' : 'Non' }}</p>
+                <p>Images: {{ menu.menuImages|length }}</p>
 
                 <p>
                     <a href="{{ path('app_employee_menu_edit', {id: menu.id}) }}">Modifier</a>
