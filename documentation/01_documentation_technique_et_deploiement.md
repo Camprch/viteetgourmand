@@ -64,6 +64,15 @@ mysql -h 127.0.0.1 -P 3307 -u app -p'!ChangeMe!' viteetgourmand < database/schem
 mysql -h 127.0.0.1 -P 3307 -u app -p'!ChangeMe!' viteetgourmand < database/seed.sql
 ```
 
+Attention: relancer `database/schema.sql` ecrase les donnees existantes de la base.
+
+Comptes de test injectes par le seed:
+
+- Mot de passe commun: `Test1234!`
+- Admin: `admin@vitegourmand.local`, `jose@vitegourmand.local`
+- Employe: `employee@vitegourmand.local`
+- Utilisateur: `user1@example.com`, `user2@example.com`
+
 ## 5. Demarrage quotidien (chaque session)
 
 ```bash

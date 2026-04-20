@@ -4,13 +4,13 @@
 SET NAMES utf8mb4;
 
 -- Users
--- password_hash is a placeholder bcrypt hash for local test accounts
+-- All test accounts use password: Test1234!
 INSERT INTO user (id, nom, prenom, email, password_hash, telephone, adresse, roles, actif, created_at) VALUES
-  (1, 'Admin', 'Julie', 'admin@vitegourmand.local', '$2y$13$8fB8c7s8UuYf6Q6xvVbM9e5Kq9kYf5JfW0wV7r8kL7QmP2vN3yKkS', '0611111111', '10 rue des Chefs, Bordeaux', '["ROLE_ADMIN","ROLE_EMPLOYEE"]', 1, '2026-04-13 09:00:00'),
-  (2, 'Admin', 'Jose', 'jose@vitegourmand.local', '$2y$13$8fB8c7s8UuYf6Q6xvVbM9e5Kq9kYf5JfW0wV7r8kL7QmP2vN3yKkS', '0622222222', '12 rue des Chefs, Bordeaux', '["ROLE_ADMIN","ROLE_EMPLOYEE"]', 1, '2026-04-13 09:05:00'),
-  (3, 'Equipe', 'Emma', 'employee@vitegourmand.local', '$2y$13$8fB8c7s8UuYf6Q6xvVbM9e5Kq9kYf5JfW0wV7r8kL7QmP2vN3yKkS', '0655555555', '7 rue du Commerce, Bordeaux', '["ROLE_EMPLOYEE"]', 1, '2026-04-13 09:08:00'),
-  (4, 'Durand', 'Camille', 'user1@example.com', '$2y$13$8fB8c7s8UuYf6Q6xvVbM9e5Kq9kYf5JfW0wV7r8kL7QmP2vN3yKkS', '0633333333', '20 rue Sainte-Catherine, Bordeaux', '["ROLE_USER"]', 1, '2026-04-13 09:10:00'),
-  (5, 'Martin', 'Alex', 'user2@example.com', '$2y$13$8fB8c7s8UuYf6Q6xvVbM9e5Kq9kYf5JfW0wV7r8kL7QmP2vN3yKkS', '0644444444', '5 avenue de la Gare, Merignac', '["ROLE_USER"]', 1, '2026-04-13 09:15:00');
+  (1, 'Admin', 'Julie', 'admin@vitegourmand.local', '$2y$10$6BJYcJEOXvm737abIVDpD.LuP08kH3HOE0P3vM8cz31u2LHlEIyAi', '0611111111', '10 rue des Chefs, Bordeaux', '["ROLE_ADMIN","ROLE_EMPLOYEE"]', 1, '2026-04-13 09:00:00'),
+  (2, 'Admin', 'Jose', 'jose@vitegourmand.local', '$2y$10$6BJYcJEOXvm737abIVDpD.LuP08kH3HOE0P3vM8cz31u2LHlEIyAi', '0622222222', '12 rue des Chefs, Bordeaux', '["ROLE_ADMIN","ROLE_EMPLOYEE"]', 1, '2026-04-13 09:05:00'),
+  (3, 'Equipe', 'Emma', 'employee@vitegourmand.local', '$2y$10$6BJYcJEOXvm737abIVDpD.LuP08kH3HOE0P3vM8cz31u2LHlEIyAi', '0655555555', '7 rue du Commerce, Bordeaux', '["ROLE_EMPLOYEE"]', 1, '2026-04-13 09:08:00'),
+  (4, 'Durand', 'Camille', 'user1@example.com', '$2y$10$6BJYcJEOXvm737abIVDpD.LuP08kH3HOE0P3vM8cz31u2LHlEIyAi', '0633333333', '20 rue Sainte-Catherine, Bordeaux', '["ROLE_USER"]', 1, '2026-04-13 09:10:00'),
+  (5, 'Martin', 'Alex', 'user2@example.com', '$2y$10$6BJYcJEOXvm737abIVDpD.LuP08kH3HOE0P3vM8cz31u2LHlEIyAi', '0644444444', '5 avenue de la Gare, Merignac', '["ROLE_USER"]', 1, '2026-04-13 09:15:00');
 
 -- Menus
 INSERT INTO menu (id, titre, description, theme, prix_min_centimes, personnes_min, conditions_particulieres, regime, stock, actif, created_at) VALUES
