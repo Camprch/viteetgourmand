@@ -55,7 +55,7 @@ class Menu
     /**
      * @var Collection<int, MenuImage>
      */
-    #[ORM\OneToMany(targetEntity: MenuImage::class, mappedBy: 'menu')]
+    #[ORM\OneToMany(targetEntity: MenuImage::class, mappedBy: 'menu', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $menuImages;
 
     /**

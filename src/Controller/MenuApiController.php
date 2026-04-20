@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Menu;
 use App\Repository\MenuRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,7 +17,9 @@ final class MenuApiController extends AbstractController
         $filters = $this->extractFilters($request);
         $menus = $menuRepository->findActiveFiltered($filters);
 
-        $payload = array_map(static function ($menu): array {
+        $payload = array_map(function (Menu $menu): array {
+            $primaryImage = $this->findPrimaryImage($menu);
+
             return [
                 'id' => $menu->getId(),
                 'titre' => $menu->getTitre(),
@@ -26,6 +29,8 @@ final class MenuApiController extends AbstractController
                 'prix_min_centimes' => $menu->getPrixMinCentimes(),
                 'personnes_min' => $menu->getPersonnesMin(),
                 'stock' => $menu->getStock(),
+                'image_principale_url' => $primaryImage?->getUrl(),
+                'image_principale_alt' => $primaryImage?->getAltText(),
             ];
         }, $menus);
 
@@ -73,5 +78,24 @@ final class MenuApiController extends AbstractController
         }
 
         return max(0, (int) round(((float) $normalized) * 100));
+    }
+
+    private function findPrimaryImage(Menu $menu): ?\App\Entity\MenuImage
+    {
+        $images = $menu->getMenuImages()->toArray();
+        if ($images === []) {
+            return null;
+        }
+
+        usort($images, static function (\App\Entity\MenuImage $a, \App\Entity\MenuImage $b): int {
+            $primarySort = ((int) ($b->isPrincipale() ?? false)) <=> ((int) ($a->isPrincipale() ?? false));
+            if ($primarySort !== 0) {
+                return $primarySort;
+            }
+
+            return ($a->getOrdreAffichage() ?? 0) <=> ($b->getOrdreAffichage() ?? 0);
+        });
+
+        return $images[0] ?? null;
     }
 }

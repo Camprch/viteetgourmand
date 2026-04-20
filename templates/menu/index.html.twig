@@ -49,6 +49,14 @@
             gap: 10px;
             margin-bottom: 0;
         }
+        .menu-card-thumb {
+            width: 100%;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #d9cdbf;
+            background: #f4ece0;
+        }
         .menu-card h2 {
             margin: 0;
             font-size: 1.25rem;
@@ -126,7 +134,21 @@
                 <p class="muted">Aucun menu actif selon ces filtres.</p>
             {% else %}
                 {% for menu in menus %}
+                    {% set primary = null %}
+                    {% for image in menu.menuImages %}
+                        {% if primary is null or image.isPrincipale %}
+                            {% set primary = image %}
+                        {% endif %}
+                    {% endfor %}
                     <article class="card menu-card">
+                        {% if primary %}
+                            <img
+                                class="menu-card-thumb"
+                                src="{{ primary.url }}"
+                                alt="{{ primary.altText ?: 'Image du menu ' ~ menu.titre }}"
+                                loading="lazy"
+                            >
+                        {% endif %}
                         <h2>{{ menu.titre }}</h2>
                         <p>{{ menu.description }}</p>
                         <p class="menu-meta"><strong>Theme:</strong> {{ menu.theme }} | <strong>Regime:</strong> {{ menu.regime }}</p>
@@ -167,9 +189,17 @@
 
                 const html = menus.map((menu) => {
                     const detailsUrl = detailsUrlPattern.replace(/0$/, String(menu.id));
+                    const imageUrl = menu.image_principale_url ? escapeHtml(menu.image_principale_url) : '';
+                    const imageAlt = menu.image_principale_alt
+                        ? escapeHtml(menu.image_principale_alt)
+                        : `Image du menu ${escapeHtml(menu.titre ?? '')}`;
+                    const imageHtml = imageUrl !== ''
+                        ? `<img class="menu-card-thumb" src="${imageUrl}" alt="${imageAlt}" loading="lazy">`
+                        : '';
 
                     return `
                         <article class="card menu-card">
+                            ${imageHtml}
                             <h2>${escapeHtml(menu.titre)}</h2>
                             <p>${escapeHtml(menu.description ?? '')}</p>
                             <p class="menu-meta"><strong>Theme:</strong> ${escapeHtml(menu.theme ?? '')} | <strong>Regime:</strong> ${escapeHtml(menu.regime ?? '')}</p>
