@@ -38,7 +38,8 @@ class MenuRepository extends ServiceEntityRepository
         }
 
         if (($filters['personnes_min'] ?? null) !== null) {
-            $qb->andWhere('m.personnesMin >= :personnesMin')
+            // Show menus compatible with the requested group size.
+            $qb->andWhere('m.personnesMin <= :personnesMin')
                 ->setParameter('personnesMin', (int) $filters['personnes_min']);
         }
 
