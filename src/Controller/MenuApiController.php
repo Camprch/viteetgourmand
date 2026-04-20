@@ -45,13 +45,19 @@ final class MenuApiController extends AbstractController
         $personnesMinRaw = trim($request->query->getString('personnes_min', ''));
         $prixMin = trim($request->query->getString('prix_min', ''));
         $prixMax = trim($request->query->getString('prix_max', ''));
+        $prixMinCentimes = $this->parseEuroToCentimes($prixMin);
+        $prixMaxCentimes = $this->parseEuroToCentimes($prixMax);
+
+        if ($prixMinCentimes !== null && $prixMaxCentimes !== null && $prixMinCentimes > $prixMaxCentimes) {
+            [$prixMinCentimes, $prixMaxCentimes] = [$prixMaxCentimes, $prixMinCentimes];
+        }
 
         return [
             'theme' => $theme,
             'regime' => $regime,
             'personnes_min' => $personnesMinRaw !== '' ? max(0, (int) $personnesMinRaw) : null,
-            'prix_min_centimes' => $this->parseEuroToCentimes($prixMin),
-            'prix_max_centimes' => $this->parseEuroToCentimes($prixMax),
+            'prix_min_centimes' => $prixMinCentimes,
+            'prix_max_centimes' => $prixMaxCentimes,
         ];
     }
 
