@@ -8,6 +8,7 @@ use App\Entity\Commande;
 use App\Entity\CommandeStatut;
 use App\Entity\Horaire;
 use App\Entity\Menu;
+use App\Entity\MenuImage;
 use App\Entity\Plat;
 use App\Entity\User;
 use App\Form\AllergeneType;
@@ -19,6 +20,7 @@ use App\Repository\CommandeRepository;
 use App\Repository\HoraireRepository;
 use App\Repository\MenuRepository;
 use App\Repository\PlatRepository;
+use App\Service\MenuImageUploadService;
 use App\Service\OrderWorkflowService;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -26,9 +28,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -49,6 +53,7 @@ final class EmployeeController extends AbstractController
     public function __construct(
         #[Autowire('%app.contact_sender%')]
         private readonly string $sender,
+        private readonly MenuImageUploadService $menuImageUploadService,
     ) {
     }
 
@@ -321,9 +326,22 @@ final class EmployeeController extends AbstractController
             ->setConditionsParticulieres(null);
 
         $form = $this->createForm(MenuType::class, $menu);
+        $this->fillMenuImageFields($form);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->syncMenuImagesFromForm($menu, $form, $request);
+            } catch (\InvalidArgumentException|\RuntimeException $exception) {
+                $this->addFlash('error', $exception->getMessage());
+
+                return $this->render('employee/menu_form.html.twig', [
+                    'menuForm' => $form,
+                    'isEdit' => false,
+                    'menu' => $menu,
+                    'menuImages' => $this->sortedMenuImages($menu),
+                ]);
+            }
             $entityManager->persist($menu);
             $entityManager->flush();
 
@@ -336,6 +354,7 @@ final class EmployeeController extends AbstractController
             'menuForm' => $form,
             'isEdit' => false,
             'menu' => $menu,
+            'menuImages' => $this->sortedMenuImages($menu),
         ]);
     }
 
@@ -345,9 +364,22 @@ final class EmployeeController extends AbstractController
         $this->assertEmployeeAccess();
 
         $form = $this->createForm(MenuType::class, $menu);
+        $this->fillMenuImageFields($form);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->syncMenuImagesFromForm($menu, $form, $request);
+            } catch (\InvalidArgumentException|\RuntimeException $exception) {
+                $this->addFlash('error', $exception->getMessage());
+
+                return $this->render('employee/menu_form.html.twig', [
+                    'menuForm' => $form,
+                    'isEdit' => true,
+                    'menu' => $menu,
+                    'menuImages' => $this->sortedMenuImages($menu),
+                ]);
+            }
             $entityManager->flush();
 
             $this->addFlash('success', 'Menu mis a jour.');
@@ -359,6 +391,7 @@ final class EmployeeController extends AbstractController
             'menuForm' => $form,
             'isEdit' => true,
             'menu' => $menu,
+            'menuImages' => $this->sortedMenuImages($menu),
         ]);
     }
 
@@ -683,5 +716,166 @@ final class EmployeeController extends AbstractController
         }
 
         return $result;
+    }
+
+    private function fillMenuImageFields(FormInterface $form): void
+    {
+        if ($form->has('imagePrincipaleAltText')) {
+            $form->get('imagePrincipaleAltText')->setData('');
+        }
+        if ($form->has('imagesSupplementairesAltTexts')) {
+            $form->get('imagesSupplementairesAltTexts')->setData('');
+        }
+    }
+
+    private function syncMenuImagesFromForm(Menu $menu, FormInterface $form, Request $request): void
+    {
+        $existingImagesInput = $request->request->all('existing_images');
+        $requestedMainIdRaw = trim($request->request->getString('main_image_id', ''));
+        $requestedMainId = ctype_digit($requestedMainIdRaw) ? (int) $requestedMainIdRaw : null;
+
+        $this->applyExistingImageChanges($menu, is_array($existingImagesInput) ? $existingImagesInput : []);
+
+        $mainAlt = trim((string) $form->get('imagePrincipaleAltText')->getData());
+
+        $forcedPrimary = null;
+        $mainFile = $form->get('imagePrincipaleFile')->getData();
+        if ($mainFile instanceof UploadedFile) {
+            $forcedPrimary = $this->createImageFromUpload($menu, $mainFile, $mainAlt);
+        }
+
+        $extraFiles = $form->get('imagesSupplementairesFiles')->getData();
+        $extraAltRaw = (string) $form->get('imagesSupplementairesAltTexts')->getData();
+        $extraAlts = preg_split('/\R+/', trim($extraAltRaw)) ?: [];
+        $extraIndex = 0;
+        if (is_array($extraFiles)) {
+            foreach ($extraFiles as $file) {
+                if (!$file instanceof UploadedFile) {
+                    continue;
+                }
+
+                $alt = trim((string) ($extraAlts[$extraIndex] ?? ''));
+                ++$extraIndex;
+                $this->createImageFromUpload($menu, $file, $alt);
+            }
+        }
+
+        $this->normalizeMenuImages($menu, $forcedPrimary, $requestedMainId);
+    }
+
+    /**
+     * @param array<string, array{alt?: string, delete?: mixed}> $existingImagesInput
+     */
+    private function applyExistingImageChanges(Menu $menu, array $existingImagesInput): void
+    {
+        foreach ($menu->getMenuImages()->toArray() as $image) {
+            $id = $image->getId();
+            if ($id === null) {
+                continue;
+            }
+
+            $row = $existingImagesInput[(string) $id] ?? $existingImagesInput[$id] ?? null;
+            if (!is_array($row)) {
+                continue;
+            }
+
+            if (!empty($row['delete'])) {
+                $menu->removeMenuImage($image);
+                continue;
+            }
+
+            $alt = trim((string) ($row['alt'] ?? ''));
+            $image->setAltText($alt !== '' ? $alt : null);
+        }
+    }
+
+    private function createImageFromUpload(Menu $menu, UploadedFile $file, string $altText): MenuImage
+    {
+        $storedPath = $this->menuImageUploadService->storeOptimized($file);
+        $image = (new MenuImage())
+            ->setUrl($storedPath)
+            ->setAltText($altText !== '' ? $altText : null)
+            ->setIsPrincipale(false)
+            ->setOrdreAffichage(0);
+        $menu->addMenuImage($image);
+
+        return $image;
+    }
+
+    private function normalizeMenuImages(Menu $menu, ?MenuImage $forcedPrimary, ?int $requestedMainId): void
+    {
+        $images = $menu->getMenuImages()->toArray();
+        if ($images === []) {
+            return;
+        }
+
+        $primary = null;
+        if ($forcedPrimary instanceof MenuImage) {
+            $primary = $forcedPrimary;
+        } elseif ($requestedMainId !== null) {
+            foreach ($images as $image) {
+                if ($image->getId() === $requestedMainId) {
+                    $primary = $image;
+                    break;
+                }
+            }
+        }
+
+        if (!$primary instanceof MenuImage) {
+            foreach ($images as $image) {
+                if ((bool) $image->isPrincipale()) {
+                    $primary = $image;
+                    break;
+                }
+            }
+        }
+
+        if (!$primary instanceof MenuImage) {
+            $primary = $images[0];
+        }
+
+        foreach ($images as $image) {
+            $image->setIsPrincipale(false);
+        }
+        $primary->setIsPrincipale(true);
+
+        $others = array_values(array_filter($images, static fn (MenuImage $image): bool => $image !== $primary));
+        usort($others, static function (MenuImage $a, MenuImage $b): int {
+            $orderDiff = ($a->getOrdreAffichage() ?? 0) <=> ($b->getOrdreAffichage() ?? 0);
+            if ($orderDiff !== 0) {
+                return $orderDiff;
+            }
+
+            return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+        });
+
+        $primary->setOrdreAffichage(1);
+        $order = 2;
+        foreach ($others as $image) {
+            $image->setOrdreAffichage($order);
+            ++$order;
+        }
+    }
+
+    /**
+     * @return list<MenuImage>
+     */
+    private function sortedMenuImages(Menu $menu): array
+    {
+        $images = $menu->getMenuImages()->toArray();
+        usort($images, static function (MenuImage $a, MenuImage $b): int {
+            if ((bool) $a->isPrincipale() !== (bool) $b->isPrincipale()) {
+                return ((int) ($b->isPrincipale() ?? false)) <=> ((int) ($a->isPrincipale() ?? false));
+            }
+
+            $orderDiff = ($a->getOrdreAffichage() ?? 0) <=> ($b->getOrdreAffichage() ?? 0);
+            if ($orderDiff !== 0) {
+                return $orderDiff;
+            }
+
+            return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+        });
+
+        return $images;
     }
 }

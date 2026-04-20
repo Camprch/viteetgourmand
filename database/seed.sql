@@ -19,9 +19,9 @@ INSERT INTO menu (id, titre, description, theme, prix_min_centimes, personnes_mi
   (3, 'Menu Noel Prestige', 'Menu festif avec options premium.', 'Noel', 35000, 8, 'Commander 10 jours avant la prestation.', 'Classique', 8, 1, '2026-04-13 09:22:00');
 
 INSERT INTO menu_image (id, menu_id, alt_text, url, is_principale, ordre_affichage) VALUES
-  (1, 1, 'Photo menu classique', '/images/menus/classique-1.jpg', 1, 1),
-  (2, 2, 'Photo menu vegan', '/images/menus/vegan-1.jpg', 1, 1),
-  (3, 3, 'Photo menu noel', '/images/menus/noel-1.jpg', 1, 1);
+  (1, 1, 'Photo menu classique', '/images/menus/classique-1.png', 1, 1),
+  (2, 2, 'Photo menu vegan', '/images/menus/vegan-1.png', 1, 1),
+  (3, 3, 'Photo menu noel', '/images/menus/noel-1.png', 1, 1);
 
 -- Dishes and allergens
 INSERT INTO plat (id, nom, description, type) VALUES
@@ -30,7 +30,10 @@ INSERT INTO plat (id, nom, description, type) VALUES
   (3, 'Mousse chocolat noir', 'Dessert intense.', 'dessert'),
   (4, 'Foie gras maison', 'Entree festive.', 'entree'),
   (5, 'Magret sauce miel', 'Plat de fete.', 'plat'),
-  (6, 'Buche artisanale', 'Dessert de saison.', 'dessert');
+  (6, 'Buche artisanale', 'Dessert de saison.', 'dessert'),
+  (7, 'Tartare de betterave', 'Entree vegetale aux herbes fraiches.', 'entree'),
+  (8, 'Curry de pois chiches', 'Plat vegan epice avec legumes de saison.', 'plat'),
+  (9, 'Salade d agrumes et menthe', 'Dessert leger sans produits animaux.', 'dessert');
 
 INSERT INTO allergene (id, nom) VALUES
   (1, 'Gluten'),
@@ -40,7 +43,7 @@ INSERT INTO allergene (id, nom) VALUES
 
 INSERT INTO menu_plat (menu_id, plat_id) VALUES
   (1, 1), (1, 2), (1, 3),
-  (2, 1), (2, 2), (2, 3),
+  (2, 7), (2, 8), (2, 9),
   (3, 4), (3, 5), (3, 6);
 
 INSERT INTO plat_allergene (plat_id, allergene_id) VALUES

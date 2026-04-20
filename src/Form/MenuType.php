@@ -8,10 +8,14 @@ use App\Repository\PlatRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -46,6 +50,47 @@ class MenuType extends AbstractType
             ])
             ->add('conditionsParticulieres', TextareaType::class, [
                 'required' => false,
+            ])
+            ->add('imagePrincipaleFile', FileType::class, [
+                'label' => 'Image principale',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File(
+                        maxSize: '2M',
+                        mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                        mimeTypesMessage: 'Formats autorises: JPG, PNG, WEBP, GIF.'
+                    ),
+                ],
+            ])
+            ->add('imagePrincipaleAltText', TextType::class, [
+                'label' => 'Texte alternatif image principale',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [new Length(max: 255)],
+            ])
+            ->add('imagesSupplementairesFiles', FileType::class, [
+                'label' => 'Images supplementaires',
+                'mapped' => false,
+                'required' => false,
+                'multiple' => true,
+                'constraints' => [
+                    new All([
+                        'constraints' => [
+                            new File(
+                                maxSize: '2M',
+                                mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+                                mimeTypesMessage: 'Formats autorises: JPG, PNG, WEBP, GIF.'
+                            ),
+                        ],
+                    ]),
+                ],
+            ])
+            ->add('imagesSupplementairesAltTexts', TextareaType::class, [
+                'label' => 'Texte alternatif des images supplementaires',
+                'mapped' => false,
+                'required' => false,
+                'help' => 'Une ligne par image ajoutee dans le meme ordre.',
             ])
             ->add('actif', CheckboxType::class, [
                 'required' => false,
