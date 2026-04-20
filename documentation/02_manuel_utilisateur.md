@@ -11,13 +11,12 @@ Ce manuel explique les parcours principaux pour les roles User, Employe et Admin
 
 ## 3. Comptes de test
 
+- Mot de passe commun (seed): `Test1234!`
 - `admin@vitegourmand.local` (admin)
 - `jose@vitegourmand.local` (admin)
 - `employee@vitegourmand.local` (employe)
 - `user1@example.com` (utilisateur)
 - `user2@example.com` (utilisateur)
-
-Si mot de passe inconnu, utiliser le reset via `/reset-password`.
 
 ## 4. Parcours visiteur
 
