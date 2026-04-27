@@ -39,6 +39,10 @@ php bin/console cache:clear --env=prod
 php bin/console cache:warmup --env=prod
 ```
 
+Note Heroku:
+- deploiement recommande depuis `main` (`git push heroku main:main`)
+- `asset-map:compile` est lance via les auto-scripts Composer
+
 ## 4. Initialisation base SQL
 
 ```bash
@@ -65,6 +69,7 @@ Verifier aussi manuellement:
 - creation commande et mail de confirmation
 - changement de statut cote employe et mails associes
 - dashboard admin (MongoDB)
+- chargement des assets front (`/assets/*` en 200)
 
 ## 6. Point critique mail en production
 

@@ -142,6 +142,11 @@ Convention attendue pour l'ECF:
 6. Verifier les parcours critiques (public, auth, user, employe, admin)
 7. Verifier envoi des mails et analytics MongoDB
 
+Pour Heroku (workflow recommande):
+
+- pousser `main` vers Heroku (`git push heroku main:main`)
+- laisser les auto-scripts Composer compiler les assets (`asset-map:compile`)
+
 Variables de prod:
 
 - Utiliser `.env.prod.example` comme base (sans committer les secrets)
