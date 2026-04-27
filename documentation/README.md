@@ -6,6 +6,7 @@ Ce dossier contient les livrables documentaires versionnes.
 
 - `01_documentation_technique_et_deploiement.md`
 - `02_manuel_utilisateur.md`
+- `03_runbook_deploiement_prod.md`
 
 ## Rappel dev local
 
