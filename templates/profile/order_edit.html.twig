@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier commande #{{ commande.id }}{% endblock %}
+
+{% block body %}
+    <h1>Modifier commande #{{ commande.id }}</h1>
+
+    <article class="card">
+        <p><strong>Menu:</strong> {{ commande.menu.titre }} (non modifiable)</p>
+    </article>
+
+    {{ form_start(orderForm) }}
+        {{ form_row(orderForm.nomPrenomClient) }}
+        {{ form_row(orderForm.gsmClient) }}
+        {{ form_row(orderForm.adressePrestation) }}
+        {{ form_row(orderForm.datePrestation) }}
+        {{ form_row(orderForm.heurePrestation) }}
+        {{ form_row(orderForm.communeLivraison) }}
+        {{ form_row(orderForm.nbPersonnes) }}
+        {{ form_row(orderForm.pretMateriel) }}
+        <button type="submit">Enregistrer les modifications</button>
+    {{ form_end(orderForm) }}
+
+    <p><a href="{{ path('app_profile_order_show', {id: commande.id}) }}">Retour commande</a></p>
+{% endblock %}

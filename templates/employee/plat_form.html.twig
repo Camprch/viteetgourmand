@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isEdit ? 'Modifier plat' : 'Creer plat' }}{% endblock %}
+
+{% block body %}
+    <h1>{{ isEdit ? 'Modifier le plat' : 'Creer un plat' }}</h1>
+
+    {{ form_start(platForm) }}
+        {{ form_row(platForm.nom) }}
+        {{ form_row(platForm.type) }}
+        {{ form_row(platForm.description) }}
+        {{ form_row(platForm.allergenes) }}
+        <button type="submit">{{ isEdit ? 'Enregistrer' : 'Creer' }}</button>
+    {{ form_end(platForm) }}
+
+    <p><a href="{{ path('app_employee_plats') }}">Retour gestion plats</a></p>
+{% endblock %}

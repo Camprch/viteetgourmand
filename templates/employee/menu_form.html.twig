@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ isEdit ? 'Modifier menu' : 'Creer menu' }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .menu-form {
+            display: grid;
+            gap: 14px;
+        }
+        .menu-form .card {
+            margin-bottom: 0;
+        }
+        .menu-form-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        .menu-form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .existing-images-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+        .existing-image-card {
+            border: 1px solid #d9cdbf;
+            border-radius: 12px;
+            padding: 12px;
+            background: #fff;
+        }
+        .existing-image-thumb {
+            width: 100%;
+            max-width: 320px;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #d8cab8;
+            background: #f3ece2;
+        }
+        .existing-image-meta {
+            margin: 8px 0 0;
+            word-break: break-word;
+            font-size: 0.92rem;
+        }
+        .existing-image-fields {
+            margin-top: 10px;
+            display: grid;
+            gap: 8px;
+        }
+        .check-line {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <h1>{{ isEdit ? 'Modifier le menu' : 'Creer un menu' }}</h1>
+
+    {{ form_start(menuForm, { attr: { class: 'menu-form' } }) }}
+        <section class="card">
+            <h2>Informations menu</h2>
+            <div class="menu-form-grid">
+                {{ form_row(menuForm.titre) }}
+                {{ form_row(menuForm.theme) }}
+                {{ form_row(menuForm.regime) }}
+                {{ form_row(menuForm.prixMinCentimes) }}
+                {{ form_row(menuForm.personnesMin) }}
+                {{ form_row(menuForm.stock) }}
+            </div>
+            {{ form_row(menuForm.description) }}
+            {{ form_row(menuForm.conditionsParticulieres) }}
+            {{ form_row(menuForm.actif) }}
+            {{ form_row(menuForm.plats) }}
+        </section>
+
+        <section class="card">
+            <h2>Images du menu</h2>
+            <p class="muted">Ajoute des images (max 2 Mo/fichier). Compression et redimensionnement automatiques quand le serveur le permet.</p>
+            <div class="menu-form-grid">
+                {{ form_row(menuForm.imagePrincipaleFile) }}
+                {{ form_row(menuForm.imagePrincipaleAltText) }}
+                {{ form_row(menuForm.imagesSupplementairesFiles) }}
+                {{ form_row(menuForm.imagesSupplementairesAltTexts) }}
+            </div>
+        </section>
+
+        {% if isEdit and menuImages is not empty %}
+            <section class="card">
+                <h2>Images existantes</h2>
+                <p class="muted">Choisis l'image principale, modifie les textes alternatifs, ou coche "Supprimer".</p>
+                <div class="existing-images-grid">
+                    {% for image in menuImages %}
+                        <article class="existing-image-card">
+                            <img class="existing-image-thumb" src="{{ image.url }}" alt="{{ image.altText ?: 'Image menu' }}" loading="lazy">
+                            <p class="existing-image-meta"><strong>Fichier:</strong> {{ image.url }}</p>
+                            <div class="existing-image-fields">
+                            <label for="existing-image-alt-{{ image.id }}">Texte alternatif</label>
+                            <input id="existing-image-alt-{{ image.id }}" type="text" name="existing_images[{{ image.id }}][alt]" value="{{ image.altText ?? '' }}" maxlength="255">
+                                <label class="check-line">
+                                <input type="radio" name="main_image_id" value="{{ image.id }}" {% if image.isPrincipale %}checked{% endif %}>
+                                Definir comme image principale
+                            </label>
+                                <label class="check-line">
+                                <input type="checkbox" name="existing_images[{{ image.id }}][delete]" value="1">
+                                Supprimer cette image
+                            </label>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        <div class="menu-form-actions">
+            <button type="submit">{{ isEdit ? 'Enregistrer' : 'Creer' }}</button>
+            <a href="{{ path('app_employee_menus') }}">Retour gestion menus</a>
+        </div>
+    {{ form_end(menuForm) }}
+{% endblock %}

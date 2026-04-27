@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau compte employe{% endblock %}
+
+{% block body %}
+    <h1>Creer un compte employe</h1>
+    <p class="muted">Le role sera automatiquement ROLE_EMPLOYEE.</p>
+
+    {{ form_start(employeeForm) }}
+        {{ form_row(employeeForm.email) }}
+        {{ form_row(employeeForm.plainPassword.first) }}
+        {{ form_row(employeeForm.plainPassword.second) }}
+        <button type="submit">Creer le compte</button>
+    {{ form_end(employeeForm) }}
+
+    <p><a href="{{ path('app_admin_dashboard') }}">Retour admin</a></p>
+{% endblock %}

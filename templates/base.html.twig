@@ -6,20 +6,162 @@
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         {% block stylesheets %}
             <style>
-                body { font-family: sans-serif; margin: 0; background: #f8f6f2; color: #1f1f1f; }
-                header { padding: 16px 24px; background: #fff; border-bottom: 1px solid #ddd; }
-                nav { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-                nav a { color: #1f1f1f; text-decoration: none; }
-                nav a:hover { text-decoration: underline; }
-                main { max-width: 1100px; margin: 20px auto; padding: 0 16px; }
-                .flash { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; }
-                .flash-success { background: #e8f7e8; border: 1px solid #8ccb8c; }
-                .flash-error { background: #ffe7e7; border: 1px solid #d27e7e; }
-                .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; margin-bottom: 14px; }
+                :root {
+                    --bg: #f8f1e6;
+                    --bg-accent: #f2e3cf;
+                    --surface: #fffdf8;
+                    --text: #2c2924;
+                    --muted: #746e64;
+                    --line: #d8cdbd;
+                    --brand: #b3541e;
+                    --brand-dark: #8f3f13;
+                    --ok-bg: #ebf8ef;
+                    --ok-line: #8ec09a;
+                    --error-bg: #ffecea;
+                    --error-line: #d69a90;
+                }
+                * { box-sizing: border-box; }
+                body {
+                    margin: 0;
+                    font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+                    line-height: 1.45;
+                    color: var(--text);
+                    background:
+                        radial-gradient(1100px 460px at 85% -10%, var(--bg-accent), transparent 60%),
+                        linear-gradient(180deg, #fdf8f0 0%, var(--bg) 100%);
+                }
+                a { color: var(--brand-dark); }
+                a:hover { color: var(--brand); }
+                header {
+                    position: sticky;
+                    top: 0;
+                    z-index: 30;
+                    backdrop-filter: blur(8px);
+                    background: color-mix(in srgb, var(--surface) 88%, transparent);
+                    border-bottom: 1px solid var(--line);
+                }
+                .site-head {
+                    max-width: 1180px;
+                    margin: 0 auto;
+                    padding: 14px 18px;
+                    display: flex;
+                    gap: 14px;
+                    align-items: center;
+                    justify-content: space-between;
+                    flex-wrap: wrap;
+                }
+                .site-brand {
+                    margin: 0;
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    letter-spacing: 0.02em;
+                }
+                nav {
+                    display: flex;
+                    gap: 8px 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+                nav a {
+                    text-decoration: none;
+                    padding: 7px 10px;
+                    border-radius: 999px;
+                    border: 1px solid transparent;
+                }
+                nav a:hover {
+                    border-color: var(--line);
+                    background: var(--surface);
+                }
+                nav .user-badge {
+                    border-radius: 999px;
+                    border: 1px solid var(--line);
+                    padding: 7px 10px;
+                    color: var(--muted);
+                    background: var(--surface);
+                }
+                main {
+                    max-width: 1180px;
+                    margin: 24px auto;
+                    padding: 0 16px 20px;
+                    animation: pageIn 240ms ease-out;
+                }
+                @keyframes pageIn {
+                    from { opacity: 0; transform: translateY(5px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                footer {
+                    margin-top: 34px;
+                    padding: 24px 20px;
+                    background: var(--surface);
+                    border-top: 1px solid var(--line);
+                }
+                h1 { margin: 0 0 14px; font-size: clamp(1.7rem, 2.8vw, 2.35rem); line-height: 1.15; }
+                h2 { margin: 0 0 12px; font-size: clamp(1.2rem, 1.9vw, 1.5rem); }
+                h3 { margin: 0 0 10px; }
+                .flash { padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; }
+                .flash-success { background: var(--ok-bg); border: 1px solid var(--ok-line); }
+                .flash-error { background: var(--error-bg); border: 1px solid var(--error-line); }
+                .card {
+                    border: 1px solid var(--line);
+                    border-radius: 14px;
+                    padding: 16px;
+                    background: var(--surface);
+                    margin-bottom: 14px;
+                    box-shadow: 0 4px 18px rgba(68, 51, 35, 0.06);
+                }
                 form > div { margin-bottom: 12px; }
-                input, textarea, select { width: 100%; max-width: 420px; padding: 8px; }
-                button { padding: 9px 14px; cursor: pointer; }
-                .muted { color: #666; }
+                input, textarea, select {
+                    width: 100%;
+                    max-width: 420px;
+                    padding: 9px 10px;
+                    border: 1px solid #cdbfa9;
+                    border-radius: 10px;
+                    background: #fff;
+                }
+                button {
+                    padding: 10px 14px;
+                    cursor: pointer;
+                    border-radius: 10px;
+                    border: 1px solid #c79677;
+                    background: linear-gradient(180deg, #fef5ec 0%, #f7e6d8 100%);
+                    color: #5b2f12;
+                    font-weight: 600;
+                }
+                button:hover { background: linear-gradient(180deg, #fcebdc 0%, #f3dac7 100%); }
+                .muted { color: var(--muted); }
+                .footer-grid {
+                    max-width: 1180px;
+                    margin: 0 auto;
+                    display: grid;
+                    gap: 16px;
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                }
+                .footer-links { display: flex; gap: 12px; flex-wrap: wrap; }
+                .footer-links a { text-decoration: none; }
+                a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+                    outline: 3px solid #005fcc;
+                    outline-offset: 2px;
+                }
+                .skip-link {
+                    position: absolute;
+                    left: -9999px;
+                    top: 0;
+                    background: #005fcc;
+                    color: #fff;
+                    padding: 10px 14px;
+                    z-index: 1000;
+                    text-decoration: none;
+                }
+                .skip-link:focus {
+                    left: 8px;
+                    top: 8px;
+                }
+                @media (max-width: 760px) {
+                    .site-head { padding: 12px 14px; }
+                    nav a, nav .user-badge { font-size: 0.95rem; }
+                    main { padding: 0 12px 14px; margin-top: 16px; }
+                    .card { padding: 14px; border-radius: 12px; }
+                }
             </style>
         {% endblock %}
 
@@ -35,34 +177,67 @@
         {% endif %}
     </head>
     <body>
-        <header>
-            <nav>
-                <a href="{{ path('app_home') }}">Accueil</a>
-                <a href="{{ path('app_menu_index') }}">Menus</a>
-                {% if app.user %}
-                    <a href="{{ path('app_menu_index') }}">Commander</a>
-                    {% if is_granted('ROLE_EMPLOYEE') %}
-                        <a href="{{ path('app_employee_dashboard') }}">Espace employe</a>
+        <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+        <header role="banner">
+            <div class="site-head">
+                <p class="site-brand">Vite & Gourmand</p>
+                <nav aria-label="Navigation principale">
+                    <a href="{{ path('app_home') }}">Accueil</a>
+                    <a href="{{ path('app_menu_index') }}">Menus</a>
+                    <a href="{{ path('app_contact') }}">Contact</a>
+                    {% if app.user %}
+                        <a href="{{ path('app_profile') }}">Mon profil</a>
+                        <a href="{{ path('app_menu_index') }}">Commander</a>
+                        {% if is_granted('ROLE_EMPLOYEE') or is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_employee_dashboard') }}">Espace employe</a>
+                        {% endif %}
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_admin_dashboard') }}">Espace admin</a>
+                        {% endif %}
+                        <span class="user-badge">Connecte: {{ app.user.userIdentifier }}</span>
+                        <a href="{{ path('app_logout') }}">Deconnexion</a>
+                    {% else %}
+                        <a href="{{ path('app_login') }}">Connexion</a>
+                        <a href="{{ path('app_register') }}">Inscription</a>
                     {% endif %}
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <a href="{{ path('app_admin_dashboard') }}">Espace admin</a>
-                    {% endif %}
-                    <span class="muted">Connecte: {{ app.user.userIdentifier }}</span>
-                    <a href="{{ path('app_logout') }}">Deconnexion</a>
-                {% else %}
-                    <a href="{{ path('app_login') }}">Connexion</a>
-                    <a href="{{ path('app_register') }}">Inscription</a>
-                {% endif %}
-            </nav>
+                </nav>
+            </div>
         </header>
-        <main>
+        <main id="main-content" role="main" tabindex="-1">
             {% for message in app.flashes('success') %}
-                <div class="flash flash-success">{{ message }}</div>
+                <div class="flash flash-success" role="status" aria-live="polite">{{ message }}</div>
             {% endfor %}
             {% for message in app.flashes('error') %}
-                <div class="flash flash-error">{{ message }}</div>
+                <div class="flash flash-error" role="alert" aria-live="assertive">{{ message }}</div>
             {% endfor %}
             {% block body %}{% endblock %}
         </main>
+        <footer role="contentinfo">
+            {% set horaires = vg_footer_horaires() %}
+            <div class="footer-grid">
+                <section>
+                    <h3>Horaires</h3>
+                    <ul>
+                        {% for item in horaires %}
+                            <li>
+                                <strong>{{ item.label }}:</strong>
+                                {% if item.ferme %}
+                                    Ferme
+                                {% else %}
+                                    {{ item.ouverture }} - {{ item.fermeture }}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+                <section>
+                    <h3>Informations</h3>
+                    <div class="footer-links">
+                        <a href="{{ path('app_mentions_legales') }}">Mentions legales</a>
+                        <a href="{{ path('app_cgv') }}">CGV</a>
+                    </div>
+                </section>
+            </div>
+        </footer>
     </body>
 </html>

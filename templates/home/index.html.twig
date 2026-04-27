@@ -2,20 +2,63 @@
 
 {% block title %}Accueil - Vite & Gourmand{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .home-hero {
+            padding: 22px 20px;
+            border-radius: 16px;
+            border: 1px solid #d9c8b1;
+            background: linear-gradient(130deg, #fff7ed 0%, #fce8d5 58%, #f8efe4 100%);
+            margin-bottom: 20px;
+        }
+        .home-hero p {
+            max-width: 72ch;
+            margin: 8px 0 0;
+        }
+        .home-hero a {
+            display: inline-block;
+            margin-top: 12px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            padding: 0;
+            list-style: none;
+        }
+        .review-note {
+            display: inline-block;
+            font-weight: 700;
+            color: #6b350f;
+            margin-bottom: 8px;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-    <h1>Vite & Gourmand</h1>
-    <p>Traiteur a Bordeaux depuis 25 ans. Menus pour vos evenements, du classique au festif.</p>
+    <section class="home-hero">
+        <h1>Vite & Gourmand</h1>
+        <p>Traiteur a Bordeaux depuis 25 ans. Menus pour vos evenements, du classique au festif.</p>
+        <a href="{{ path('app_menu_index') }}">Explorer les menus</a>
+    </section>
 
     <h2>Avis clients valides</h2>
     {% if avis is empty %}
         <p class="muted">Aucun avis valide pour le moment.</p>
     {% else %}
+        <ul class="reviews-grid" aria-label="Liste des avis clients">
         {% for item in avis %}
-            <article class="card">
-                <strong>Note: {{ item.note }}/5</strong>
-                <p>{{ item.commentaire }}</p>
-                <small class="muted">{{ item.createdAt|date('d/m/Y H:i') }}</small>
-            </article>
+            <li>
+                <article class="card">
+                    <span class="review-note">Note: {{ item.note }}/5</span>
+                    <p>{{ item.commentaire }}</p>
+                    <small class="muted">{{ item.createdAt|date('d/m/Y H:i') }}</small>
+                </article>
+            </li>
         {% endfor %}
+        </ul>
     {% endif %}
 {% endblock %}

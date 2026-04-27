@@ -4,5 +4,87 @@
 
 {% block body %}
     <h1>Espace Administrateur</h1>
-    <p>Zone reservee aux administrateurs.</p>
+    <p>Gestion des comptes employes.</p>
+
+    <p><a href="{{ path('app_admin_employee_new') }}">Creer un compte employe</a></p>
+
+    <h2>Employes</h2>
+    {% if employees is empty %}
+        <p class="muted">Aucun employe pour le moment.</p>
+    {% else %}
+        <ul aria-label="Liste des employes">
+        {% for employee in employees %}
+            <li>
+                <article class="card">
+                    <h3>{{ employee.email }}</h3>
+                    <p>Actif: {{ employee.actif ? 'Oui' : 'Non' }}</p>
+                    <p>Cree le: {{ employee.createdAt|date('d/m/Y H:i') }}</p>
+                    <form method="post" action="{{ path('app_admin_employee_toggle_active', {id: employee.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle_employee_' ~ employee.id) }}">
+                        <button type="submit">{{ employee.actif ? 'Desactiver' : 'Activer' }}</button>
+                    </form>
+                </article>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Dashboard commandes (MongoDB)</h2>
+    {% if ordersByMenu is empty %}
+        <p class="muted">Aucune donnee analytics disponible pour le moment.</p>
+    {% else %}
+        <p class="muted">Comparatif du nombre de commandes par menu.</p>
+        <ul aria-label="Comparatif commandes par menu">
+        {% for row in ordersByMenu %}
+            {% set width = maxOrders > 0 ? ((row.commandes * 100) / maxOrders)|round(0, 'ceil') : 0 %}
+            <li>
+                <article class="card">
+                    <h3>{{ row.menu_titre }}</h3>
+                    <p>{{ row.commandes }} commande(s)</p>
+                    <div style="max-width: 520px; background:#f0f0f0; border:1px solid #ddd; height:16px;" role="img" aria-label="{{ row.commandes }} commandes pour {{ row.menu_titre }}">
+                        <div style="width: {{ width }}%; background:#3b7ddd; height:100%;"></div>
+                    </div>
+                </article>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Chiffre d'affaires par menu</h2>
+    <form method="get" action="{{ path('app_admin_dashboard') }}" class="card">
+        <div>
+            <label for="menu_id">Menu</label>
+            <select id="menu_id" name="menu_id">
+                <option value="">Tous les menus</option>
+                {% for menu in menus %}
+                    <option value="{{ menu.id }}" {% if filters.menu_id == menu.id %}selected{% endif %}>{{ menu.titre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="date_from">Date debut</label>
+            <input id="date_from" type="date" name="date_from" value="{{ filters.date_from }}">
+        </div>
+        <div>
+            <label for="date_to">Date fin</label>
+            <input id="date_to" type="date" name="date_to" value="{{ filters.date_to }}">
+        </div>
+        <button type="submit">Appliquer filtres</button>
+    </form>
+
+    {% if revenueByMenu is empty %}
+        <p class="muted">Aucune commande sur ce filtre.</p>
+    {% else %}
+        <ul aria-label="Chiffre d'affaires par menu">
+        {% for row in revenueByMenu %}
+            <li>
+                <article class="card">
+                    <h3>{{ row.menu_titre }}</h3>
+                    <p>Commandes: {{ row.commandes }}</p>
+                    <p>CA: {{ (row.chiffre_affaires_centimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+                </article>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
 {% endblock %}

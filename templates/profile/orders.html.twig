@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes commandes{% endblock %}
+
+{% block body %}
+    <h1>Mes commandes</h1>
+
+    {% if commandes is empty %}
+        <p class="muted">Aucune commande pour le moment.</p>
+    {% else %}
+        <ul aria-label="Liste de mes commandes">
+        {% for commande in commandes %}
+            <li>
+                <article class="card">
+                    <h2>Commande #{{ commande.id }}</h2>
+                    <p><strong>Menu:</strong> {{ commande.menu.titre }}</p>
+                    <p>Date commande: {{ commande.dateCommande|date('d/m/Y H:i') }}</p>
+                    <p>Date prestation: {{ commande.datePrestation|date('d/m/Y') }} a {{ commande.heurePrestation|date('H:i') }}</p>
+                    <p>Total: {{ (commande.prixTotalCentimes / 100)|number_format(2, ',', ' ') }} EUR</p>
+                    <a href="{{ path('app_profile_order_show', {id: commande.id}) }}">Voir le suivi</a>
+                </article>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

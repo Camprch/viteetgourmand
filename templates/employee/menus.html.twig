@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion menus{% endblock %}
+
+{% block body %}
+    <h1>Gestion des menus</h1>
+    <p>
+        <a href="{{ path('app_employee_orders') }}">Gestion commandes</a> |
+        <a href="{{ path('app_employee_reviews') }}">Moderation avis</a> |
+        <a href="{{ path('app_employee_hours') }}">Gestion horaires</a> |
+        <a href="{{ path('app_employee_plats') }}">Gestion plats</a> |
+        <a href="{{ path('app_employee_allergenes') }}">Gestion allergenes</a>
+    </p>
+
+    <p><a href="{{ path('app_employee_menu_new') }}">Creer un menu</a></p>
+
+    {% if menus is empty %}
+        <p class="muted">Aucun menu pour le moment.</p>
+    {% else %}
+        {% for menu in menus %}
+            <article class="card">
+                <p><strong>#{{ menu.id }} - {{ menu.titre }}</strong></p>
+                <p>Theme: {{ menu.theme }} | Regime: {{ menu.regime }}</p>
+                <p>Prix min: {{ (menu.prixMinCentimes / 100)|number_format(2, ',', ' ') }} EUR | Personnes min: {{ menu.personnesMin }}</p>
+                <p>Stock: {{ menu.stock }} | Actif: {{ menu.actif ? 'Oui' : 'Non' }}</p>
+                <p>Images: {{ menu.menuImages|length }}</p>
+
+                <p>
+                    <a href="{{ path('app_employee_menu_edit', {id: menu.id}) }}">Modifier</a>
+                </p>
+
+                <form method="post" action="{{ path('app_employee_menu_delete', {id: menu.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_menu_' ~ menu.id) }}">
+                    <button type="submit">Supprimer</button>
+                </form>
+            </article>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

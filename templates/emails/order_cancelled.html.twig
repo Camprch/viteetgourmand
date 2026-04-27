@@ -1,0 +1,15 @@
+<p>Bonjour {{ user.prenom ?: 'client' }},</p>
+
+<p>La commande <strong>#{{ commande.id }}</strong> a ete annulee par l'equipe.</p>
+
+{% if modeContact %}
+    <p><strong>Mode de contact:</strong> {{ modeContact }}</p>
+{% endif %}
+
+{% if motif %}
+    <p><strong>Motif:</strong> {{ motif }}</p>
+{% endif %}
+
+<p>Si besoin, tu peux nous recontacter via la page contact.</p>
+
+<p>A bientot,<br>L'equipe Vite & Gourmand</p>
