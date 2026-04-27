@@ -1,0 +1,5 @@
+framework:
+    mailer:
+        # Keep emails synchronous in production by default so deployment
+        # does not depend on a Messenger worker to send business emails.
+        message_bus: false
