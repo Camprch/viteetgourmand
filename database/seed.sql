@@ -69,7 +69,16 @@ INSERT INTO commande (
 ) VALUES
   (1, 4, 1, 1, '2026-04-13 10:00:00', '2026-04-20', '12:30:00', '20 rue Sainte-Catherine, Bordeaux', 'Camille Durand', '0633333333', 18000, 0, 0, 18000, 4, 0),
   (2, 5, 2, 2, '2026-04-13 10:10:00', '2026-04-22', '19:00:00', '5 avenue de la Gare, Merignac', 'Alex Martin', '0644444444', 24200, 1002, 2420, 22782, 11, 1),
-  (3, 4, 3, 3, '2026-04-13 10:20:00', '2026-12-24', '20:00:00', '11 avenue Jean Jaures, Pessac', 'Camille Durand', '0633333333', 35000, 866, 0, 35866, 8, 0);
+  (3, 4, 3, 3, '2026-04-13 10:20:00', '2026-12-24', '20:00:00', '11 avenue Jean Jaures, Pessac', 'Camille Durand', '0633333333', 35000, 866, 0, 35866, 8, 0),
+  (4, 5, 1, 4, '2026-04-18 09:30:00', '2026-04-30', '13:00:00', '14 cours Gambetta, Talence', 'Alex Martin', '0644444444', 40500, 742, 4050, 37192, 9, 0),
+  (5, 4, 2, 1, '2026-05-02 11:15:00', '2026-05-10', '12:00:00', '20 rue Sainte-Catherine, Bordeaux', 'Camille Durand', '0633333333', 26400, 0, 0, 26400, 12, 0),
+  (6, 5, 3, 2, '2026-05-20 16:40:00', '2026-06-05', '19:30:00', '5 avenue de la Gare, Merignac', 'Alex Martin', '0644444444', 52500, 1002, 5250, 48252, 12, 1),
+  (7, 4, 1, 1, '2026-06-01 10:05:00', '2026-06-08', '12:15:00', '20 rue Sainte-Catherine, Bordeaux', 'Camille Durand', '0633333333', 27000, 0, 0, 27000, 6, 0),
+  (8, 5, 2, 3, '2026-06-10 14:25:00', '2026-06-20', '19:45:00', '28 avenue Pasteur, Pessac', 'Alex Martin', '0644444444', 33000, 866, 3300, 30566, 15, 0),
+  (9, 4, 1, 2, '2026-07-04 09:50:00', '2026-07-14', '12:00:00', '44 avenue de la Somme, Merignac', 'Camille Durand', '0633333333', 22500, 1002, 0, 23502, 5, 0),
+  (10, 5, 3, 1, '2026-08-01 12:10:00', '2026-08-15', '20:00:00', '5 avenue de la Gare, Merignac', 'Alex Martin', '0644444444', 35000, 0, 0, 35000, 8, 0),
+  (11, 4, 2, 4, '2026-09-03 15:20:00', '2026-09-12', '18:45:00', '9 rue Frederic Mistral, Talence', 'Camille Durand', '0633333333', 28600, 742, 2860, 26482, 13, 1),
+  (12, 5, 1, 3, '2026-10-05 10:55:00', '2026-10-18', '12:20:00', '62 route de Toulouse, Pessac', 'Alex Martin', '0644444444', 31500, 866, 3150, 29216, 7, 0);
 
 -- Status timeline
 INSERT INTO commande_statut (id, commande_id, user_id, statut, date_heure, commentaire) VALUES
@@ -85,7 +94,31 @@ INSERT INTO commande_statut (id, commande_id, user_id, statut, date_heure, comme
   (9, 2, 2, 'livre', '2026-04-22 19:10:00', 'Materiel prete au client'),
   (10, 2, 2, 'attente_retour_materiel', '2026-04-22 19:15:00', 'Retour sous 10 jours ou penalite CGV'),
 
-  (11, 3, 2, 'accepte', '2026-04-13 10:45:00', 'Prestation de Noel');
+  (11, 3, 2, 'accepte', '2026-04-13 10:45:00', 'Prestation de Noel'),
+  (12, 4, 3, 'accepte', '2026-04-18 09:50:00', NULL),
+  (13, 4, 3, 'en_preparation', '2026-04-29 09:00:00', NULL),
+  (14, 4, 3, 'en_cours_livraison', '2026-04-30 12:15:00', NULL),
+  (15, 4, 3, 'livre', '2026-04-30 13:10:00', NULL),
+  (16, 4, 3, 'terminee', '2026-04-30 15:00:00', NULL),
+  (17, 5, 2, 'accepte', '2026-05-02 11:40:00', NULL),
+  (18, 5, 2, 'en_preparation', '2026-05-09 08:10:00', NULL),
+  (19, 5, 2, 'livre', '2026-05-10 12:20:00', NULL),
+  (20, 5, 2, 'terminee', '2026-05-10 13:10:00', NULL),
+  (21, 6, 2, 'accepte', '2026-05-20 17:00:00', NULL),
+  (22, 6, 2, 'en_preparation', '2026-06-04 10:00:00', NULL),
+  (23, 6, 2, 'en_cours_livraison', '2026-06-05 18:50:00', NULL),
+  (24, 6, 2, 'livre', '2026-06-05 19:35:00', 'Materiel prete au client'),
+  (25, 6, 2, 'attente_retour_materiel', '2026-06-05 19:40:00', NULL),
+  (26, 7, 3, 'accepte', '2026-06-01 10:20:00', NULL),
+  (27, 7, 3, 'terminee', '2026-06-08 14:30:00', NULL),
+  (28, 8, 2, 'accepte', '2026-06-10 14:35:00', NULL),
+  (29, 8, 2, 'annulee', '2026-06-11 09:00:00', '[gsm] Date evenement decalee par le client'),
+  (30, 9, 3, 'accepte', '2026-07-04 10:00:00', NULL),
+  (31, 9, 3, 'terminee', '2026-07-14 14:00:00', NULL),
+  (32, 10, 2, 'accepte', '2026-08-01 12:25:00', NULL),
+  (33, 11, 2, 'accepte', '2026-09-03 15:30:00', NULL),
+  (34, 11, 2, 'en_preparation', '2026-09-11 09:30:00', NULL),
+  (35, 12, 3, 'accepte', '2026-10-05 11:10:00', NULL);
 
 -- Reviews
 INSERT INTO avis (id, commande_id, note, commentaire, valide, created_at) VALUES
