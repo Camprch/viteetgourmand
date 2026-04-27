@@ -2,6 +2,29 @@
 
 {% block title %}Espace admin{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-chart-wrap {
+            overflow-x: auto;
+        }
+        .admin-chart {
+            display: block;
+            width: 100%;
+            min-width: 720px;
+            height: auto;
+            border: 1px solid #d8cdbd;
+            border-radius: 12px;
+            background: #fffdf8;
+        }
+        .admin-chart-caption {
+            margin-top: 8px;
+            color: #6b645b;
+            font-size: 0.95rem;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <h1>Espace Administrateur</h1>
     <p>Gestion des comptes employes.</p>
@@ -34,20 +57,35 @@
         <p class="muted">Aucune donnee analytics disponible pour le moment.</p>
     {% else %}
         <p class="muted">Comparatif du nombre de commandes par menu.</p>
-        <ul aria-label="Comparatif commandes par menu">
-        {% for row in ordersByMenu %}
-            {% set width = maxOrders > 0 ? ((row.commandes * 100) / maxOrders)|round(0, 'ceil') : 0 %}
-            <li>
-                <article class="card">
-                    <h3>{{ row.menu_titre }}</h3>
-                    <p>{{ row.commandes }} commande(s)</p>
-                    <div style="max-width: 520px; background:#f0f0f0; border:1px solid #ddd; height:16px;" role="img" aria-label="{{ row.commandes }} commandes pour {{ row.menu_titre }}">
-                        <div style="width: {{ width }}%; background:#3b7ddd; height:100%;"></div>
-                    </div>
-                </article>
-            </li>
-        {% endfor %}
-        </ul>
+        {% set chartWidth = 860 %}
+        {% set topPad = 24 %}
+        {% set leftPad = 54 %}
+        {% set bottomPad = 42 %}
+        {% set rowHeight = 34 %}
+        {% set barHeight = 18 %}
+        {% set chartHeight = topPad + bottomPad + (ordersByMenu|length * rowHeight) %}
+        {% set plotWidth = chartWidth - leftPad - 20 %}
+        <div class="admin-chart-wrap card">
+            <svg
+                class="admin-chart"
+                viewBox="0 0 {{ chartWidth }} {{ chartHeight }}"
+                role="img"
+                aria-label="Graphique comparatif du nombre de commandes par menu"
+            >
+                <line x1="{{ leftPad }}" y1="{{ topPad }}" x2="{{ leftPad }}" y2="{{ chartHeight - bottomPad }}" stroke="#cabfab" />
+                <line x1="{{ leftPad }}" y1="{{ chartHeight - bottomPad }}" x2="{{ chartWidth - 16 }}" y2="{{ chartHeight - bottomPad }}" stroke="#cabfab" />
+                {% for row in ordersByMenu %}
+                    {% set y = topPad + (loop.index0 * rowHeight) + 6 %}
+                    {% set barWidth = maxOrders > 0 ? ((row.commandes * plotWidth) / maxOrders)|round(0, 'floor') : 0 %}
+                    <text x="12" y="{{ y + 12 }}" fill="#554d42" font-size="11">{{ loop.index }}</text>
+                    <rect x="{{ leftPad + 1 }}" y="{{ y }}" width="{{ barWidth }}" height="{{ barHeight }}" rx="4" fill="#b3541e" />
+                    <text x="{{ leftPad + barWidth + 8 }}" y="{{ y + 13 }}" fill="#2c2924" font-size="12">{{ row.commandes }}</text>
+                    <text x="{{ leftPad + 6 }}" y="{{ y - 2 }}" fill="#6d6459" font-size="11">{{ row.menu_titre|slice(0, 58) }}</text>
+                {% endfor %}
+                <text x="{{ chartWidth - 40 }}" y="{{ chartHeight - 12 }}" fill="#6d6459" font-size="11">max: {{ maxOrders }}</text>
+            </svg>
+            <p class="admin-chart-caption">Chaque barre represente le nombre de commandes par menu (projection MongoDB).</p>
+        </div>
     {% endif %}
 
     <h2>Chiffre d'affaires par menu</h2>
