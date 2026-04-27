@@ -56,25 +56,31 @@
                 .site-brand-link {
                     display: inline-flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 12px;
+                    padding: 6px 10px 6px 4px;
+                    border-radius: 16px;
+                    background: linear-gradient(180deg, #fff7ee 0%, #f7ead8 100%);
+                    box-shadow: 0 6px 20px rgba(89, 53, 24, 0.14);
                     text-decoration: none;
                     color: inherit;
                 }
                 .site-brand-link:hover {
                     color: inherit;
+                    transform: translateY(-1px);
                 }
                 .site-logo {
-                    width: 52px;
-                    height: 52px;
-                    object-fit: contain;
-                    border-radius: 10px;
-                    border: 1px solid var(--line);
-                    background: #fff;
+                    width: 82px;
+                    height: 82px;
+                    object-fit: cover;
+                    object-position: center;
+                    border-radius: 14px;
+                    filter: drop-shadow(0 4px 10px rgba(60, 37, 19, 0.22));
                 }
                 .site-brand-text {
-                    font-size: 1.1rem;
+                    font-size: 1.25rem;
                     font-weight: 700;
-                    letter-spacing: 0.02em;
+                    letter-spacing: 0.03em;
+                    color: #5b2f12;
                 }
                 nav {
                     display: flex;
@@ -178,7 +184,9 @@
                 }
                 @media (max-width: 760px) {
                     .site-head { padding: 12px 14px; }
-                    .site-logo { width: 44px; height: 44px; }
+                    .site-brand-link { padding: 4px 8px 4px 2px; }
+                    .site-logo { width: 64px; height: 64px; }
+                    .site-brand-text { font-size: 1.05rem; }
                     nav a, nav .user-badge { font-size: 0.95rem; }
                     main { padding: 0 12px 14px; margin-top: 16px; }
                     .card { padding: 14px; border-radius: 12px; }
@@ -203,7 +211,7 @@
             <div class="site-head">
                 <p class="site-brand">
                     <a class="site-brand-link" href="{{ path('app_home') }}" aria-label="Retour a l'accueil">
-                        <img class="site-logo" src="{{ asset('images/logo.png') }}" alt="Logo Vite & Gourmand" width="52" height="52">
+                        <img class="site-logo" src="{{ asset('images/logo.png') }}" alt="Logo Vite & Gourmand" width="82" height="82">
                         <span class="site-brand-text">Vite & Gourmand</span>
                     </a>
                 </p>
