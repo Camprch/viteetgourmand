@@ -1,0 +1,18 @@
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent direct access to the front controller if the URI already contains it
+    RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
+    RewriteRule .* - [E=BASE:%1]
+
+    # Use the real file/directory if it exists
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule .? - [L]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule .? - [L]
+
+    # Otherwise forward to the front controller
+    RewriteRule . %{ENV:BASE}/index.php [L]
+</IfModule>
