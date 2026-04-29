@@ -159,7 +159,9 @@ Smoke test HTTP post-deploiement:
 
 ## 11. Documentation complementaire
 
-- Documentation technique/deploiement: `documentation/01_documentation_technique_et_deploiement.md`
-- Manuel utilisateur (source markdown): `documentation/02_manuel_utilisateur.md`
-- Runbook deploiement prod: `documentation/03_runbook_deploiement_prod.md`
+- Documentation technique/deploiement: `documentation/documentation_technique_et_deploiement.md`
+- Manuel utilisateur: `documentation/manuel_utilisateur.md`
+- Runbook deploiement prod: `documentation/runbook_deploiement_prod.md`
+- Charte graphique: `documentation/charte_graphique.md`
+- MCD: `documentation/mcd.png`
 - SQL: `database/schema.sql` et `database/seed.sql`
